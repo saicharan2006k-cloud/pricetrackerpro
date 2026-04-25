@@ -1,15 +1,61 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, session
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 from serpapi import GoogleSearch
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
+load_dotenv()
 app = Flask(__name__)
-CORS(app)
+app.secret_key = 'smartprice-ai-secret-key'
+CORS(app, supports_credentials=True)
+
+# ✅ Email setup
+def send_email_alert(user_email, product_title, old_price, new_price, link):
+    load_dotenv(override=True)
+    sender_email = os.environ.get("EMAIL_USER")
+    sender_password = os.environ.get("EMAIL_PASS")
+    
+    print(f"\n[SIMULATED EMAIL] To: {user_email}")
+    print(f"Subject: Price Drop Alert: {product_title}")
+    print(f"Price dropped to Rs.{new_price} (Target was Rs.{old_price})! Link: {link}\n")
+
+    if sender_email and sender_password:
+        try:
+            msg = MIMEMultipart()
+            msg['From'] = sender_email
+            msg['To'] = user_email
+            msg['Subject'] = f"Price Drop Alert: {product_title}"
+            body = f"Good news!\n\nThe price of '{product_title}' has dropped to Rs.{new_price} (Target: Rs.{old_price}).\n\nView Deal: {link}\n\n- SmartPrice AI"
+            msg.attach(MIMEText(body, 'plain', 'utf-8'))
+            
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.starttls()
+            server.login(sender_email, sender_password)
+            server.send_message(msg)
+            server.quit()
+            print(f"Real email sent to {user_email}")
+        except Exception as e:
+            print(f"Failed to send real email: {e}")
 
 # ✅ Database setup
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prices.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Check if a cloud database is provided via environment variables
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    # SQLAlchemy requires 'postgresql://' instead of 'postgres://' which many cloud providers use
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+else:
+    # Fallback to local SQLite if no cloud database is configured
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'prices.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -17,10 +63,14 @@ db = SQLAlchemy(app)
 # Run this in terminal before starting app:
 # Windows: set SERPAPI_KEY=your-key-here
 # Then access it here safely
-API_KEY = os.environ.get("SERPAPI_KEY", "0ac6ecaf39890a2970ac89e67f91e5093c81ae07eb9de5193bb04e98fed6caa2")  # ← fallback to hardcoded if not set
+API_KEY = os.environ.get("SERPAPI_KEY")
+
+if not API_KEY:
+    raise ValueError("SERPAPI_KEY environment variable not set")
 
 
-# ✅ Database Model
+
+# ✅ Database Models
 class PriceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     query = db.Column(db.String(200))
@@ -28,6 +78,33 @@ class PriceHistory(db.Model):
     price = db.Column(db.Float)
     site = db.Column(db.String(100))
     date = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class Watchlist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(500))
+    price = db.Column(db.String(50))
+    site = db.Column(db.String(100))
+    image = db.Column(db.String(1000))
+    link = db.Column(db.String(1000))
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+
+
+class Alert(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    title = db.Column(db.String(500))
+    price = db.Column(db.String(50))
+    site = db.Column(db.String(100))
+    link = db.Column(db.String(1000))
+    target_price = db.Column(db.Float, nullable=True)
+    added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # Create tables
@@ -110,6 +187,22 @@ def get_products(query):
         })
 
     db.session.commit()
+
+    # ✅ Check for price drops for existing alerts
+    for p in final:
+        title = p["title"]
+        price_val = parse_price(p["price"])
+        if not price_val: continue
+        
+        alerts = Alert.query.filter_by(title=title).all()
+        for alert in alerts:
+            if alert.target_price and price_val < alert.target_price:
+                user = User.query.get(alert.user_id)
+                if user:
+                    send_email_alert(user.email, title, alert.target_price, price_val, p["link"])
+                    alert.target_price = price_val  # Update so we don't keep emailing
+                    db.session.commit()
+
     return final
 
 
@@ -143,6 +236,204 @@ def history():
 
     return jsonify(history_data)
 
+
+# ── WATCHLIST ────────────────────────────────────────────────
+@app.route("/watchlist", methods=["GET"])
+def get_watchlist():
+    items = Watchlist.query.order_by(Watchlist.added_at.desc()).all()
+    return jsonify([{
+        "id": w.id,
+        "title": w.title,
+        "price": w.price,
+        "site": w.site,
+        "image": w.image,
+        "link": w.link,
+        "added_at": w.added_at.strftime("%d %b %Y")
+    } for w in items])
+
+
+@app.route("/watchlist", methods=["POST"])
+def add_watchlist():
+    data = request.get_json()
+    if not data or not data.get("title"):
+        return jsonify({"error": "Missing product data"}), 400
+    # Avoid duplicates by title
+    existing = Watchlist.query.filter_by(title=data["title"]).first()
+    if existing:
+        return jsonify({"message": "Already in watchlist", "id": existing.id}), 200
+    item = Watchlist(
+        title=data.get("title"),
+        price=data.get("price", ""),
+        site=data.get("site", ""),
+        image=data.get("image", ""),
+        link=data.get("link", "#")
+    )
+    db.session.add(item)
+    db.session.commit()
+    return jsonify({"message": "Added to watchlist", "id": item.id}), 201
+
+
+@app.route("/watchlist/<int:item_id>", methods=["DELETE"])
+def remove_watchlist(item_id):
+    item = Watchlist.query.get(item_id)
+    if not item:
+        return jsonify({"error": "Not found"}), 404
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Removed"}), 200
+
+
+# ── BEST DEAL OF THE DAY ─────────────────────────────────────
+@app.route("/best-deal")
+def best_deal():
+    """
+    Find the product whose current price is lowest compared to
+    its all-time highest price (biggest absolute saving).
+    Requires at least 2 data points per product.
+    """
+    from sqlalchemy import func
+
+    # Get max price ever recorded per (query, title)
+    subq_max = db.session.query(
+        PriceHistory.query,
+        PriceHistory.title,
+        func.max(PriceHistory.price).label("max_price")
+    ).group_by(PriceHistory.query, PriceHistory.title).subquery()
+
+    # Get latest price per (query, title)
+    subq_latest = db.session.query(
+        PriceHistory.query,
+        PriceHistory.title,
+        PriceHistory.site,
+        PriceHistory.price.label("current_price"),
+        func.max(PriceHistory.date).label("latest_date")
+    ).group_by(PriceHistory.query, PriceHistory.title).subquery()
+
+    # Join and compute savings
+    results = db.session.query(
+        subq_latest.c.title,
+        subq_latest.c.site,
+        subq_latest.c.query,
+        subq_latest.c.current_price,
+        subq_max.c.max_price
+    ).join(
+        subq_max,
+        (subq_latest.c.query == subq_max.c.query) &
+        (subq_latest.c.title == subq_max.c.title)
+    ).all()
+
+    if not results:
+        return jsonify({"error": "No data yet"}), 404
+
+    # Pick product with biggest absolute savings
+    best = max(results, key=lambda r: (r.max_price or 0) - (r.current_price or 0))
+    savings = (best.max_price or 0) - (best.current_price or 0)
+
+    if savings <= 0:
+        return jsonify({"error": "No savings found yet"}), 404
+
+    return jsonify({
+        "title": best.title,
+        "current_price": best.current_price,
+        "highest_price": best.max_price,
+        "savings": round(savings, 2),
+        "site": best.site,
+        "query": best.query
+    })
+
+
+# ── AUTHENTICATION ───────────────────────────────────────────
+@app.route("/signup", methods=["POST"])
+def signup():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    if not email or not password:
+        return jsonify({"error": "Email and password required"}), 400
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email already registered"}), 400
+    
+    new_user = User(email=email, password_hash=generate_password_hash(password))
+    db.session.add(new_user)
+    db.session.commit()
+    session["user_id"] = new_user.id
+    return jsonify({"message": "Signup successful", "email": email}), 201
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    user = User.query.filter_by(email=email).first()
+    if user and check_password_hash(user.password_hash, password):
+        session["user_id"] = user.id
+        return jsonify({"message": "Login successful", "email": email}), 200
+    return jsonify({"error": "Invalid email or password"}), 401
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.pop("user_id", None)
+    return jsonify({"message": "Logged out"}), 200
+
+@app.route("/auth-status", methods=["GET"])
+def auth_status():
+    if "user_id" in session:
+        user = User.query.get(session["user_id"])
+        if user:
+            return jsonify({"logged_in": True, "email": user.email})
+    return jsonify({"logged_in": False})
+
+
+# ── PRICE ALERTS ─────────────────────────────────────────────
+@app.route("/alerts", methods=["GET"])
+def get_alerts():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    alerts = Alert.query.filter_by(user_id=session["user_id"]).order_by(Alert.added_at.desc()).all()
+    return jsonify([{
+        "id": a.id,
+        "title": a.title,
+        "price": a.price,
+        "site": a.site,
+        "link": a.link,
+        "target_price": a.target_price,
+        "added_at": a.added_at.strftime("%d %b %Y")
+    } for a in alerts])
+
+@app.route("/alerts", methods=["POST"])
+def add_alert():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    data = request.get_json()
+    if not data or not data.get("title"):
+        return jsonify({"error": "Missing product data"}), 400
+    
+    existing = Alert.query.filter_by(user_id=session["user_id"], title=data["title"]).first()
+    if existing:
+        return jsonify({"message": "Alert already exists", "id": existing.id}), 200
+        
+    item = Alert(
+        user_id=session["user_id"],
+        title=data.get("title"),
+        price=data.get("price", ""),
+        site=data.get("site", ""),
+        link=data.get("link", "#"),
+        target_price=data.get("target_price")
+    )
+    db.session.add(item)
+    db.session.commit()
+    return jsonify({"message": "Alert added", "id": item.id}), 201
+
+@app.route("/alerts/<int:item_id>", methods=["DELETE"])
+def remove_alert(item_id):
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    item = Alert.query.filter_by(id=item_id, user_id=session["user_id"]).first()
+    if not item:
+        return jsonify({"error": "Not found"}), 404
+    db.session.delete(item)
+    db.session.commit()
+    return jsonify({"message": "Removed"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True)

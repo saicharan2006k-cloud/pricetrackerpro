@@ -1,0 +1,6 @@
+Flask
+flask-cors
+flask-sqlalchemy
+google-search-results
+python-dotenv
+psycopg2-binary
