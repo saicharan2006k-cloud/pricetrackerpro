@@ -82,6 +82,7 @@ class PriceHistory(db.Model):
 
 class Watchlist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     title = db.Column(db.String(500))
     price = db.Column(db.String(50))
     site = db.Column(db.String(100))
@@ -114,6 +115,12 @@ with app.app_context():
     db.create_all()
     try:
         db.session.execute(text("ALTER TABLE alert ADD COLUMN alert_type VARCHAR(50) DEFAULT 'price'"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+    
+    try:
+        db.session.execute(text('ALTER TABLE watchlist ADD COLUMN user_id INTEGER REFERENCES "user"(id)'))
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -286,7 +293,9 @@ def compare():
 # ── WATCHLIST ────────────────────────────────────────────────
 @app.route("/watchlist", methods=["GET"])
 def get_watchlist():
-    items = Watchlist.query.order_by(Watchlist.added_at.desc()).all()
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    items = Watchlist.query.filter_by(user_id=session["user_id"]).order_by(Watchlist.added_at.desc()).all()
     return jsonify([{
         "id": w.id,
         "title": w.title,
@@ -300,14 +309,17 @@ def get_watchlist():
 
 @app.route("/watchlist", methods=["POST"])
 def add_watchlist():
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
     data = request.get_json()
     if not data or not data.get("title"):
         return jsonify({"error": "Missing product data"}), 400
-    # Avoid duplicates by title
-    existing = Watchlist.query.filter_by(title=data["title"]).first()
+    # Avoid duplicates by title for the same user
+    existing = Watchlist.query.filter_by(user_id=session["user_id"], title=data["title"]).first()
     if existing:
         return jsonify({"message": "Already in watchlist", "id": existing.id}), 200
     item = Watchlist(
+        user_id=session["user_id"],
         title=data.get("title"),
         price=data.get("price", ""),
         site=data.get("site", ""),
@@ -321,7 +333,9 @@ def add_watchlist():
 
 @app.route("/watchlist/<int:item_id>", methods=["DELETE"])
 def remove_watchlist(item_id):
-    item = Watchlist.query.get(item_id)
+    if "user_id" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+    item = Watchlist.query.filter_by(id=item_id, user_id=session["user_id"]).first()
     if not item:
         return jsonify({"error": "Not found"}), 404
     db.session.delete(item)

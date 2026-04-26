@@ -1,1301 +1,896 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SmartPrice AI</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>PriceTrack — Track any price. Buy at the perfect moment.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600&display=swap" rel="stylesheet"/>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f8fc;--white:#fff;
+  --navy:#1a237e;--navy2:#283593;
+  --blue:#3949ab;--blue2:#5c6bc0;
+  --blue-light:#e8eaf6;--blue-mid:#c5cae9;
+  --green:#00897b;--green-bg:#e0f2f1;
+  --red:#e53935;--amber:#f59e0b;
+  --text:#111827;--text2:#6b7280;--text3:#9ca3af;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:0 8px 40px rgba(0,0,0,.13);
+  --radius:10px;--font:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+html{background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px}
+body{min-height:100vh}
+a{text-decoration:none;color:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-  :root {
-    --bg: #0d0d0f;
-    --bg2: #13131a;
-    --bg3: #1a1a24;
-    --bg4: #22222e;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --gold: #e8a825;
-    --gold2: #f5c842;
-    --gold-dim: rgba(232,168,37,0.12);
-    --gold-dim2: rgba(232,168,37,0.22);
-    --text: #f0ede6;
-    --text2: #9c9891;
-    --text3: #5e5b56;
-    --green: #3dbf7f;
-    --red: #e25c5c;
-    --blue: #5ba4d4;
-    --radius: 10px;
-    --radius-lg: 16px;
-  }
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 2rem;height:62px}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:1.08rem;font-weight:800;color:var(--navy);letter-spacing:-.4px;margin-right:2.5rem;cursor:pointer}
+.nav-logo-icon{width:33px;height:33px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.nav-links{display:flex;align-items:center;flex:1}
+.nav-link{padding:0 16px;height:62px;display:flex;align-items:center;font-size:.875rem;font-weight:500;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;cursor:pointer}
+.nav-link:hover{color:var(--navy)}
+.nav-link.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:700}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.btn{cursor:pointer;font-family:var(--font);border:none;outline:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-outline{background:transparent;border:1.5px solid var(--border2);color:var(--text2);padding:7px 16px;border-radius:8px;font-size:.82rem;font-weight:600}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy)}
+.btn-primary{background:var(--navy);color:#fff;padding:8px 18px;border-radius:8px;font-size:.82rem;font-weight:700}
+.btn-primary:hover{background:var(--navy2)}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--blue-light);border-radius:20px;padding:5px 12px 5px 8px;font-size:.78rem;font-weight:600;color:var(--navy);max-width:200px;overflow:hidden}
+.user-avatar{width:22px;height:22px;background:var(--navy);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.6rem;font-weight:700;flex-shrink:0}
 
-  html { background: var(--bg); color: var(--text); font-family: 'Syne', sans-serif; font-size: 15px; }
-  body { min-height: 100vh; }
+/* ── HERO ── */
+.hero{max-width:800px;margin:0 auto;padding:4rem 2rem 2.5rem;text-align:center}
+.hero-pill{display:inline-flex;align-items:center;gap:8px;background:#eef2ff;border:1px solid var(--blue-mid);border-radius:20px;padding:5px 14px;font-size:.78rem;font-weight:600;color:var(--blue2);margin-bottom:1.5rem}
+.hero-pill-dot{width:7px;height:7px;background:var(--blue2);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero-title{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;line-height:1.18;letter-spacing:-.04em;color:var(--text);margin-bottom:.75rem}
+.hero-title .accent{color:var(--blue);position:relative}
+.hero-title .accent::after{content:'';position:absolute;bottom:-3px;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--blue2));border-radius:2px}
+.hero-sub{font-size:.97rem;color:var(--text2);line-height:1.65;margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto}
+.search-wrap{display:flex;align-items:center;background:var(--white);border:1.5px solid var(--border2);border-radius:12px;padding:5px 5px 5px 16px;box-shadow:var(--shadow-md);max-width:600px;margin:0 auto 1.1rem;transition:border-color .2s,box-shadow .2s}
+.search-wrap:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(57,73,171,.1),var(--shadow-md)}
+.search-icon{flex-shrink:0;color:var(--text3);margin-right:6px}
+.search-input{flex:1;border:none;outline:none;background:transparent;font-size:.97rem;color:var(--text);padding:6px 0;font-family:var(--font)}
+.search-input::placeholder{color:var(--text3)}
+.search-btn{background:var(--navy);color:#fff;border-radius:8px;padding:9px 24px;font-size:.88rem;font-weight:700;flex-shrink:0;cursor:pointer;border:none;font-family:var(--font);transition:background .15s}
+.search-btn:hover{background:var(--navy2)}
+.trust-badges{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.trust-badge{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text2);font-weight:500}
+.trust-badge svg{color:var(--green)}
 
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg2); }
-  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+/* ── MAIN ── */
+.main{max-width:1100px;margin:0 auto;padding:2rem}
 
-  /* ── TOPBAR ── */
-  .topbar {
-    position: sticky; top: 0; z-index: 100;
-    background: rgba(13,13,15,0.88);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 2rem; height: 58px;
-  }
-  .logo {
-    font-family: 'Fraunces', serif;
-    font-size: 1.35rem; font-weight: 600;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    display: flex; align-items: center; gap: 10px;
-  }
-  .logo-dot { width: 8px; height: 8px; background: var(--gold); border-radius: 50%; display: inline-block; }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
-  .auth-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem; color: var(--text2);
-    background: var(--bg3); border: 1px solid var(--border);
-    padding: 4px 12px; border-radius: 20px;
-    max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .btn { cursor: pointer; border: none; outline: none; font-family: 'Syne', sans-serif; transition: all 0.18s; }
-  .btn-ghost {
-    background: transparent; color: var(--text2);
-    border: 1px solid var(--border2); padding: 6px 16px; border-radius: 8px;
-    font-size: 0.82rem; letter-spacing: 0.02em;
-  }
-  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-gold {
-    background: var(--gold); color: #0d0d0f;
-    padding: 7px 18px; border-radius: 8px;
-    font-size: 0.82rem; font-weight: 700; letter-spacing: 0.03em;
-  }
-  .btn-gold:hover { background: var(--gold2); }
+/* ── BEST DEAL ── */
+.best-deal{background:linear-gradient(135deg,#e8f5e9,#f1f8e9);border:1.5px solid #a5d6a7;border-radius:var(--radius);padding:14px 20px;margin-bottom:1.5rem;display:none;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.best-deal.show{display:flex}
+.deal-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:3px}
+.deal-title{font-size:.88rem;font-weight:600;color:var(--text);max-width:440px;line-height:1.4}
+.deal-prices{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.deal-now{font-size:1.2rem;font-weight:800;color:var(--green);letter-spacing:-.03em}
+.deal-was{font-size:.78rem;color:var(--text3);text-decoration:line-through}
+.deal-save{background:#c8e6c9;color:var(--green);font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px}
 
-  /* ── HERO ── */
-  .hero {
-    padding: 3.5rem 2rem 2rem;
-    max-width: 820px; margin: 0 auto;
-    text-align: center;
-  }
-  .hero-title {
-    font-family: 'Fraunces', serif;
-    font-size: clamp(2rem, 4vw, 2.9rem);
-    font-weight: 600; line-height: 1.18;
-    letter-spacing: -0.03em;
-    color: var(--text);
-    margin-bottom: 0.4rem;
-  }
-  .hero-title em { font-style: italic; color: var(--gold); }
-  .hero-sub { color: var(--text2); font-size: 0.9rem; margin-bottom: 2rem; line-height: 1.6; }
+/* ── SECTION HDR ── */
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-ttl{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.section-cnt{font-size:.75rem;background:var(--blue-light);color:var(--blue2);padding:3px 10px;border-radius:20px;font-weight:600}
 
-  /* ── SEARCH BAR ── */
-  .search-wrap {
-    display: flex; gap: 10px; max-width: 640px; margin: 0 auto;
-    background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 14px; padding: 6px 6px 6px 18px;
-    transition: border-color 0.2s;
-  }
-  .search-wrap:focus-within { border-color: var(--gold); }
-  .search-wrap input {
-    flex: 1; background: transparent; border: none; outline: none;
-    color: var(--text); font-family: 'Syne', sans-serif; font-size: 0.95rem;
-  }
-  .search-wrap input::placeholder { color: var(--text3); }
-  .btn-search {
-    background: var(--gold); color: #0d0d0f;
-    border: none; border-radius: 9px; padding: 8px 22px;
-    font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700;
-    cursor: pointer; letter-spacing: 0.03em; transition: background 0.18s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .btn-search:hover { background: var(--gold2); }
-  .btn-search svg { width: 16px; height: 16px; }
+/* ── SEARCH TOOLBAR ── */
+.search-toolbar{display:flex;align-items:center;justify-content:space-between;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px 16px;margin-bottom:1.5rem;box-shadow:var(--shadow)}
+.toolbar-left, .toolbar-right{display:flex;align-items:center;gap:10px}
+.toolbar-label{font-size:.82rem;font-weight:600;color:var(--text2)}
+.toolbar-select{width:auto;padding:6px 30px 6px 12px;font-size:.82rem;border-color:var(--border2);border-radius:6px;height:auto;background-color:var(--white);box-shadow:none}
+.toggle-switch{position:relative;display:inline-block;width:36px;height:20px}
+.toggle-switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background-color:var(--border2);transition:.3s;border-radius:20px}
+.slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background-color:white;transition:.3s;border-radius:50%}
+input:checked + .slider{background-color:var(--green)}
+input:checked + .slider:before{transform:translateX(16px)}
 
-  /* ── BEST DEAL BANNER ── */
-  .best-deal-banner {
-    max-width: 900px; margin: 1.5rem auto 0;
-    background: linear-gradient(135deg, rgba(232,168,37,0.08), rgba(232,168,37,0.03));
-    border: 1px solid rgba(232,168,37,0.25);
-    border-radius: var(--radius-lg); padding: 1rem 1.5rem;
-    display: none; align-items: center; justify-content: space-between; gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .best-deal-banner.visible { display: flex; }
-  .deal-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem; letter-spacing: 0.12em; color: var(--gold);
-    text-transform: uppercase; margin-bottom: 4px;
-  }
-  .deal-title { font-size: 0.9rem; color: var(--text); font-weight: 600; max-width: 420px; line-height: 1.4; }
-  .deal-prices { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .deal-current {
-    font-family: 'DM Mono', monospace;
-    font-size: 1.3rem; font-weight: 500; color: var(--gold);
-  }
-  .deal-was { font-size: 0.78rem; color: var(--text3); text-decoration: line-through; }
-  .deal-save {
-    background: rgba(61,191,127,0.12);
-    color: var(--green); font-size: 0.75rem; font-weight: 600;
-    padding: 3px 10px; border-radius: 20px;
-    font-family: 'DM Mono', monospace;
-  }
+/* ── PRODUCT CARDS ── */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.pcard{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s,transform .15s;display:flex;flex-direction:column}
+.pcard:hover{box-shadow:var(--shadow-md);border-color:var(--blue-mid);transform:translateY(-2px)}
+.pcard-img{height:140px;background:var(--bg);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.pcard-img img{max-width:80%;max-height:110px;object-fit:contain}
+.live-badge{position:absolute;top:8px;left:8px;background:var(--green);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:5px}
+.oos-badge{position:absolute;top:8px;left:8px;background:var(--red);color:#fff;font-size:.65rem;font-weight:700;padding:3px 8px;border-radius:5px}
+.pcard-body{padding:14px;flex:1;display:flex;flex-direction:column;gap:6px}
+.pcard-source{font-size:.65rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue2)}
+.pcard-name{font-size:.87rem;font-weight:600;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.pcard-price{font-size:1.25rem;font-weight:800;color:var(--navy);letter-spacing:-.04em}
+.pcard-rating{display:flex;align-items:center;gap:5px;font-size:.73rem;color:var(--text2)}
+.stars{color:var(--amber);font-size:.7rem;letter-spacing:1px}
+.pcard-bar{height:3px;background:var(--blue-light);border-radius:2px;margin-top:4px;overflow:hidden}
+.pcard-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--blue2));border-radius:2px;transition:width .5s ease}
+.pcard-actions{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:7px}
+.pact{flex:1;padding:7px 6px;border-radius:7px;font-size:.72rem;font-weight:700;text-align:center;cursor:pointer;border:none;font-family:var(--font);transition:all .15s}
+.pact-primary{background:var(--blue-light);color:var(--navy);border:1.5px solid var(--blue-mid)}
+.pact-primary:hover{background:var(--blue-mid)}
+.pact-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border2)}
+.pact-ghost:hover{border-color:var(--border);color:var(--text)}
+.pact-link{background:transparent;color:var(--blue2);border:1.5px solid rgba(92,107,192,.2);font-size:.67rem}
+.pact-link:hover{background:var(--blue-light)}
+.pcard-sub-row{padding:0 10px 10px;display:flex;gap:6px}
 
-  /* ── MAIN LAYOUT ── */
-  .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:2.5rem}
+.feature-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:20px 16px;text-align:center;box-shadow:var(--shadow);transition:border-color .15s,box-shadow .15s}
+.feature-card:hover{border-color:var(--blue-mid);box-shadow:var(--shadow-md)}
+.feat-icon{width:44px;height:44px;border-radius:12px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center}
+.feat-title{font-size:.87rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.feat-sub{font-size:.75rem;color:var(--text3)}
 
-  /* ── TABS ── */
-  .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0; }
-  .tab {
-    cursor: pointer; padding: 8px 20px; font-size: 0.85rem;
-    color: var(--text2); border-radius: 8px 8px 0 0;
-    border-bottom: 2px solid transparent; margin-bottom: -1px;
-    transition: all 0.18s; font-weight: 600; letter-spacing: 0.03em;
-  }
-  .tab:hover { color: var(--text); }
-  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+/* ── STATES ── */
+.empty{text-align:center;padding:4rem 2rem;color:var(--text3);font-size:.88rem;line-height:1.8}
+.empty-icon{font-size:2.2rem;margin-bottom:.75rem;opacity:.3;display:block}
+.spinner-wrap{display:flex;align-items:center;justify-content:center;gap:10px;padding:4rem 2rem;color:var(--text2);font-size:.85rem}
+.spinner{width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--navy);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── STATES ── */
-  .empty-state {
-    text-align: center; padding: 4rem 2rem;
-    color: var(--text3); font-size: 0.88rem; line-height: 1.8;
-  }
-  .empty-state span { display: block; font-size: 2rem; margin-bottom: 1rem; opacity: 0.4; }
-  .loading-spinner {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 4rem; color: var(--text2); font-size: 0.85rem;
-  }
-  .spinner {
-    width: 20px; height: 20px; border: 2px solid var(--border2);
-    border-top-color: var(--gold); border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ── WATCHLIST ── */
+.wl-list{display:flex;flex-direction:column;gap:10px}
+.wl-row{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:border-color .15s}
+.wl-row:hover{border-color:var(--blue-mid)}
+.wl-img{width:48px;height:48px;background:var(--bg);border-radius:8px;object-fit:contain;flex-shrink:0;border:1px solid var(--border)}
+.wl-info{flex:1;min-width:0}
+.wl-title{font-size:.88rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:4px}
+.wl-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wl-price{font-size:.95rem;font-weight:800;color:var(--navy);letter-spacing:-.03em}
+.wl-site{font-size:.7rem;font-weight:700;color:var(--blue2);text-transform:uppercase;letter-spacing:.08em}
+.wl-date{font-size:.7rem;color:var(--text3)}
+.wl-btns{display:flex;gap:7px}
+.icon-btn{width:32px;height:32px;border-radius:7px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;font-size:.85rem}
+.icon-btn:hover{border-color:var(--red);color:var(--red)}
+.icon-btn.view:hover{border-color:var(--blue);color:var(--blue)}
 
-  /* ── PRODUCT GRID ── */
-  .product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-  }
-  .product-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); overflow: hidden;
-    transition: border-color 0.2s, transform 0.2s;
-    display: flex; flex-direction: column;
-  }
-  .product-card:hover { border-color: var(--border2); transform: translateY(-2px); }
-  .card-img-wrap {
-    background: var(--bg3); aspect-ratio: 1/1; max-height: 170px;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
-    position: relative;
-  }
-  .card-img-wrap img { max-width: 90%; max-height: 90%; object-fit: contain; }
-  .out-of-stock-badge {
-    position: absolute; top: 8px; right: 8px;
-    background: rgba(226,92,92,0.18); color: var(--red);
-    font-size: 0.65rem; font-weight: 600; letter-spacing: 0.08em;
-    padding: 3px 8px; border-radius: 20px; text-transform: uppercase;
-    font-family: 'DM Mono', monospace;
-  }
-  .card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
-  .card-site {
-    font-family: 'DM Mono', monospace; font-size: 0.65rem;
-    letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase;
-  }
-  .card-title {
-    font-size: 0.85rem; line-height: 1.45; color: var(--text);
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .card-price {
-    font-family: 'DM Mono', monospace;
-    font-size: 1.15rem; font-weight: 500; color: var(--gold);
-  }
-  .card-rating {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 0.75rem; color: var(--text2);
-  }
-  .stars { color: var(--gold); font-size: 0.7rem; }
-  .card-actions { margin-top: auto; display: flex; flex-direction: column; gap: 6px; padding: 0 14px 14px; }
-  .card-btn-row { display: flex; gap: 6px; }
-  .card-btn {
-    flex: 1; padding: 7px 8px; border-radius: 8px; font-size: 0.75rem;
-    font-family: 'Syne', sans-serif; font-weight: 600; cursor: pointer;
-    border: none; outline: none; transition: all 0.18s; letter-spacing: 0.02em;
-    text-align: center;
-  }
-  .card-btn-primary { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(232,168,37,0.3); }
-  .card-btn-primary:hover { background: var(--gold-dim2); }
-  .card-btn-secondary { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
-  .card-btn-secondary:hover { border-color: var(--border2); color: var(--text); }
-  .card-btn-full { width: 100%; }
-  .card-btn-view { background: transparent; color: var(--blue); border: 1px solid rgba(91,164,212,0.25); font-size: 0.72rem; padding: 5px 8px; }
-  .card-btn-view:hover { background: rgba(91,164,212,0.08); }
+/* ── ALERTS ── */
+.alerts-list{display:flex;flex-direction:column;gap:10px}
+.alert-row{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:border-color .15s}
+.alert-row:hover{border-color:var(--blue-mid)}
+.alert-icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.alert-icon-box.price{background:var(--blue-light)}
+.alert-icon-box.restock{background:var(--green-bg)}
+.alert-info{flex:1;min-width:0}
+.alert-name{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alert-pills{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill{font-size:.65rem;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase}
+.pill-blue{background:var(--blue-light);color:var(--navy)}
+.pill-green{background:var(--green-bg);color:var(--green)}
 
-  /* ── WATCHLIST ── */
-  .watchlist-grid { display: flex; flex-direction: column; gap: 10px; }
-  .watchlist-item {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 16px;
-    display: flex; align-items: center; gap: 14px;
-    transition: border-color 0.18s;
-  }
-  .watchlist-item:hover { border-color: var(--border2); }
-  .wl-img { width: 52px; height: 52px; background: var(--bg3); border-radius: 8px; object-fit: contain; flex-shrink: 0; }
-  .wl-info { flex: 1; min-width: 0; }
-  .wl-title { font-size: 0.87rem; color: var(--text); line-height: 1.4; margin-bottom: 4px;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .wl-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .wl-price { font-family: 'DM Mono', monospace; font-size: 0.9rem; color: var(--gold); }
-  .wl-site { font-size: 0.72rem; color: var(--text3); }
-  .wl-date { font-size: 0.7rem; color: var(--text3); font-family: 'DM Mono', monospace; }
-  .wl-actions { display: flex; gap: 6px; }
-  .icon-btn {
-    background: transparent; border: 1px solid var(--border); color: var(--text2);
-    width: 32px; height: 32px; border-radius: 7px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; transition: all 0.18s;
-    font-size: 0.85rem;
-  }
-  .icon-btn:hover { border-color: var(--red); color: var(--red); }
-  .icon-btn.view:hover { border-color: var(--blue); color: var(--blue); }
+/* ── COMPARE DASHBOARD ── */
+.cd-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.5rem}
+.cd-stat{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+.cd-stat-label{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:5px}
+.cd-stat-val{font-size:1.4rem;font-weight:800;color:var(--navy);letter-spacing:-.04em}
+.cd-stat-val.green{color:var(--green)}
+.cd-stat-sub{font-size:.72rem;color:var(--text3);margin-top:3px}
+.cd-filter-row{display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap}
+.cd-chip{padding:5px 14px;border-radius:20px;border:1.5px solid var(--border2);background:transparent;font-size:.78rem;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s;font-family:var(--font)}
+.cd-chip.active{background:var(--blue-light);border-color:var(--blue-mid);color:var(--navy)}
+.cd-grid{display:flex;flex-direction:column;gap:12px}
+.cd-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);transition:border-color .15s}
+.cd-card:hover{border-color:var(--blue-mid)}
+.cd-card-hdr{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;user-select:none}
+.cd-badge{font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.07em;flex-shrink:0}
+.cd-badge.wl{background:var(--blue-light);color:var(--navy)}
+.cd-badge.al{background:var(--green-bg);color:var(--green)}
+.cd-badge.both{background:#fce4ec;color:#c2185b}
+.cd-card-title{flex:1;font-size:.88rem;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cd-summary{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cd-low{font-size:.97rem;font-weight:800;color:var(--green);letter-spacing:-.03em}
+.cd-high{font-size:.78rem;color:var(--text3);text-decoration:line-through}
+.cd-save{background:var(--green-bg);color:var(--green);font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:20px}
+.cd-flag{font-size:.68rem;font-weight:700;padding:2px 9px;border-radius:20px}
+.cd-flag.hit{background:var(--green-bg);color:var(--green)}
+.cd-flag.miss{background:#fff3e0;color:#e65100}
+.cd-chevron{color:var(--text3);font-size:.72rem;transition:transform .2s;flex-shrink:0}
+.cd-card.open .cd-chevron{transform:rotate(180deg)}
+.cd-body{display:none;border-top:1px solid var(--border);padding:14px 16px}
+.cd-card.open .cd-body{display:block}
+.cd-site-rows{display:flex;flex-direction:column;gap:8px}
+.cd-site-row{display:grid;grid-template-columns:140px 1fr 90px;align-items:center;gap:12px}
+.cd-site-name{font-size:.78rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cd-bar-track{background:var(--bg);border-radius:4px;height:8px;overflow:hidden;border:1px solid var(--border)}
+.cd-bar-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.cd-bar-fill.cheapest{background:var(--green)}
+.cd-bar-fill.mid{background:var(--blue)}
+.cd-bar-fill.priciest{background:#ef9a9a}
+.cd-site-price{font-size:.82rem;font-weight:700;color:var(--text);text-align:right}
+.cd-site-price.cheapest{color:var(--green)}
+.cd-target-line{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);font-size:.78rem;color:var(--text2);margin-bottom:10px}
+.cd-nodata{font-size:.8rem;color:var(--text3);font-style:italic;padding:4px 0}
+.cd-updated{font-size:.68rem;color:var(--text3);margin-top:8px}
+.no-auth-panel{text-align:center;padding:3.5rem 2rem;color:var(--text2)}
+.no-auth-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:.4rem}
 
-  /* ── ALERTS ── */
-  .alerts-grid { display: flex; flex-direction: column; gap: 10px; }
-  .alert-item {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 14px 16px;
-    display: flex; align-items: center; gap: 14px;
-    transition: border-color 0.18s;
-  }
-  .alert-item:hover { border-color: var(--border2); }
-  .alert-icon {
-    width: 38px; height: 38px; border-radius: 9px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
-  }
-  .alert-icon.price { background: rgba(232,168,37,0.1); }
-  .alert-icon.restock { background: rgba(61,191,127,0.1); }
-  .alert-info { flex: 1; min-width: 0; }
-  .alert-title { font-size: 0.87rem; color: var(--text); margin-bottom: 5px; line-height: 1.4;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .alert-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  .alert-type-badge {
-    font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em;
-    padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
-  }
-  .alert-type-badge.price { background: var(--gold-dim); color: var(--gold); }
-  .alert-type-badge.restock { background: rgba(61,191,127,0.1); color: var(--green); }
-  .alert-target { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text2); }
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(17,24,39,.5);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:14px;padding:1.8rem;width:100%;max-width:440px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);transform:translateY(18px);transition:transform .25s}
+.overlay.open .modal{transform:translateY(0)}
+.modal-lg{max-width:580px}
+.modal-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.4rem}
+.modal-title{font-size:1.1rem;font-weight:700;color:var(--text)}
+.modal-close{width:30px;height:30px;border-radius:7px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .15s;font-family:var(--font)}
+.modal-close:hover{border-color:var(--border);color:var(--text)}
+.auth-tabs{display:flex;gap:4px;margin-bottom:1.3rem;background:var(--bg);border-radius:9px;padding:3px}
+.auth-tab{flex:1;padding:8px;border-radius:7px;font-size:.83rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s;color:var(--text2);border:none;background:transparent;font-family:var(--font)}
+.auth-tab.active{background:var(--white);color:var(--navy);box-shadow:var(--shadow)}
+.form-grp{margin-bottom:1rem}
+.form-label{display:block;font-size:.75rem;font-weight:600;color:var(--text2);margin-bottom:5px;letter-spacing:.04em}
+.form-input{width:100%;background:var(--white);border:1.5px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:.9rem;outline:none;transition:border-color .18s;font-family:var(--font)}
+.form-input:focus{border-color:var(--blue)}
+.form-input::placeholder{color:var(--text3)}
+.form-select{width:100%;background:var(--white);border:1.5px solid var(--border2);border-radius:8px;padding:10px 13px;color:var(--text);font-size:.9rem;outline:none;font-family:var(--font);cursor:pointer;appearance:none}
+.btn-full{width:100%;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;margin-top:6px}
+.form-msg{font-size:.78rem;text-align:center;margin-top:8px;min-height:18px}
+.form-msg.err{color:var(--red)}
+.form-msg.ok{color:var(--green)}
+.alert-preview{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:11px 13px;margin-bottom:1.1rem;font-size:.82rem;color:var(--text2);line-height:1.5}
+.alert-preview strong{color:var(--text);display:block;margin-bottom:2px;font-size:.87rem}
+.login-hint{background:#eef2ff;border:1px solid var(--blue-mid);border-radius:8px;padding:9px 13px;font-size:.78rem;color:var(--blue2);margin-bottom:1rem}
+.compare-rows{display:flex;flex-direction:column;gap:8px;margin-top:.75rem}
+.cmp-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--bg)}
+.cmp-row.best{border-color:#a5d6a7;background:var(--green-bg)}
+.cmp-site{flex:1;font-size:.85rem;color:var(--text2)}
+.cmp-price{font-size:.97rem;font-weight:700;color:var(--text)}
+.cmp-row.best .cmp-price{color:var(--green)}
+.cmp-best-tag{font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:20px;background:#c8e6c9;color:var(--green);text-transform:uppercase;letter-spacing:.07em}
+.hist-rows{display:flex;flex-direction:column;gap:6px;margin-top:.75rem}
+.hist-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:9px 13px;background:var(--bg);border-radius:8px;border:1px solid var(--border)}
+.hist-name{font-size:.8rem;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-price{font-size:.85rem;font-weight:700;color:var(--navy);white-space:nowrap}
+.hist-date{font-size:.7rem;color:var(--text3);white-space:nowrap}
 
-  /* ── MODAL ── */
-  .modal-overlay {
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
-    display: flex; align-items: center; justify-content: center;
-    opacity: 0; pointer-events: none; transition: opacity 0.2s;
-    padding: 1rem;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal {
-    background: var(--bg2); border: 1px solid var(--border2);
-    border-radius: var(--radius-lg); padding: 1.8rem;
-    width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto;
-    transform: translateY(20px); transition: transform 0.25s;
-  }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-lg { max-width: 640px; }
-  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.4rem; }
-  .modal-title { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; color: var(--text); line-height: 1.3; }
-  .modal-close {
-    background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
-    width: 30px; height: 30px; border-radius: 7px; cursor: pointer; font-size: 1rem;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    transition: all 0.15s;
-  }
-  .modal-close:hover { border-color: var(--border2); color: var(--text); }
-
-  /* ── AUTH TABS ── */
-  .auth-tabs { display: flex; gap: 4px; margin-bottom: 1.4rem; background: var(--bg3); border-radius: 9px; padding: 3px; }
-  .auth-tab {
-    flex: 1; padding: 8px; border-radius: 7px; font-size: 0.83rem; font-weight: 600;
-    cursor: pointer; text-align: center; transition: all 0.18s; color: var(--text2);
-  }
-  .auth-tab.active { background: var(--bg4); color: var(--text); }
-
-  /* ── FORM ── */
-  .form-group { margin-bottom: 1rem; }
-  .form-label { display: block; font-size: 0.78rem; color: var(--text2); margin-bottom: 6px; letter-spacing: 0.04em; }
-  .form-input {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 9px; padding: 10px 14px; color: var(--text);
-    font-family: 'Syne', sans-serif; font-size: 0.9rem; outline: none;
-    transition: border-color 0.18s;
-  }
-  .form-input:focus { border-color: var(--gold); }
-  .form-input::placeholder { color: var(--text3); }
-  .form-select {
-    width: 100%; background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 9px; padding: 10px 14px; color: var(--text);
-    font-family: 'Syne', sans-serif; font-size: 0.9rem; outline: none;
-    cursor: pointer; appearance: none;
-  }
-  .btn-full { width: 100%; padding: 11px; border-radius: 9px; font-size: 0.9rem; font-weight: 700; margin-top: 6px; }
-  .form-msg { font-size: 0.8rem; text-align: center; margin-top: 10px; min-height: 20px; }
-  .msg-err { color: var(--red); }
-  .msg-ok { color: var(--green); }
-
-  /* ── COMPARE TABLE ── */
-  .compare-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 1rem; }
-  .compare-row {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius);
-    padding: 12px 16px; gap: 10px;
-  }
-  .compare-row.best { border-color: rgba(61,191,127,0.35); background: rgba(61,191,127,0.05); }
-  .compare-site { font-size: 0.85rem; color: var(--text2); flex: 1; }
-  .compare-price {
-    font-family: 'DM Mono', monospace; font-size: 1rem;
-    font-weight: 500; color: var(--text);
-  }
-  .compare-row.best .compare-price { color: var(--green); }
-  .best-tag {
-    background: rgba(61,191,127,0.12); color: var(--green);
-    font-size: 0.65rem; padding: 2px 8px; border-radius: 20px;
-    font-family: 'DM Mono', monospace; letter-spacing: 0.06em; text-transform: uppercase;
-  }
-
-  /* ── HISTORY ── */
-  .history-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 1rem; }
-  .history-row {
-    display: grid; grid-template-columns: 1fr auto auto;
-    align-items: center; gap: 10px;
-    padding: 9px 14px; background: var(--bg3); border-radius: 8px;
-    border: 1px solid var(--border);
-  }
-  .history-title { font-size: 0.8rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .history-price { font-family: 'DM Mono', monospace; font-size: 0.85rem; color: var(--gold); white-space: nowrap; }
-  .history-date { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); white-space: nowrap; }
-
-  /* ── SECTION HEADER ── */
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .section-title { font-size: 0.78rem; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; font-family: 'DM Mono', monospace; }
-  .section-count { font-family: 'DM Mono', monospace; font-size: 0.75rem; color: var(--text3); background: var(--bg3); padding: 3px 10px; border-radius: 20px; }
-
-  /* ── TOAST ── */
-  .toast {
-    position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
-    background: var(--bg3); border: 1px solid var(--border2);
-    border-radius: 10px; padding: 12px 18px;
-    font-size: 0.83rem; color: var(--text);
-    transform: translateY(20px); opacity: 0;
-    transition: all 0.25s; pointer-events: none;
-    max-width: 320px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.ok { border-color: rgba(61,191,127,0.35); }
-  .toast.err { border-color: rgba(226,92,92,0.35); }
-
-  /* ── ALERT MODAL SPECIFIC ── */
-  .alert-modal-product {
-    background: var(--bg3); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px; margin-bottom: 1.2rem;
-    font-size: 0.83rem; color: var(--text2); line-height: 1.5;
-  }
-  .alert-modal-product strong { color: var(--text); display: block; margin-bottom: 3px; }
-
-  .login-prompt {
-    background: var(--gold-dim); border: 1px solid rgba(232,168,37,0.2);
-    border-radius: var(--radius); padding: 10px 14px; font-size: 0.8rem;
-    color: var(--gold); margin-bottom: 1rem;
-  }
-
-  /* ── PILL DIVIDER ── */
-  .divider { border: none; border-top: 1px solid var(--border); margin: 0.5rem 0 1rem; }
-
-  /* ── COMPARE DASHBOARD ── */
-  .cd-grid { display: flex; flex-direction: column; gap: 1.2rem; }
-  .cd-card {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius-lg); overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .cd-card:hover { border-color: var(--border2); }
-  .cd-card-header {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 18px; cursor: pointer; user-select: none;
-  }
-  .cd-source-badge {
-    font-family: 'DM Mono', monospace; font-size: 0.62rem;
-    letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 8px;
-    border-radius: 20px; flex-shrink: 0;
-  }
-  .cd-source-badge.wl { background: var(--gold-dim); color: var(--gold); border: 1px solid rgba(232,168,37,0.2); }
-  .cd-source-badge.al { background: rgba(61,191,127,0.1); color: var(--green); border: 1px solid rgba(61,191,127,0.2); }
-  .cd-source-badge.both { background: rgba(91,164,212,0.1); color: var(--blue); border: 1px solid rgba(91,164,212,0.2); }
-  .cd-card-title {
-    flex: 1; font-size: 0.88rem; color: var(--text); line-height: 1.4;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .cd-summary { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-  .cd-low { font-family: 'DM Mono', monospace; font-size: 1rem; color: var(--green); font-weight: 500; }
-  .cd-high { font-family: 'DM Mono', monospace; font-size: 0.8rem; color: var(--text3); text-decoration: line-through; }
-  .cd-save {
-    font-family: 'DM Mono', monospace; font-size: 0.68rem; padding: 2px 9px;
-    border-radius: 20px; background: rgba(61,191,127,0.1); color: var(--green);
-    white-space: nowrap;
-  }
-  .cd-target-flag {
-    font-size: 0.68rem; padding: 2px 9px; border-radius: 20px;
-    font-family: 'DM Mono', monospace; white-space: nowrap;
-  }
-  .cd-target-flag.hit { background: rgba(61,191,127,0.15); color: var(--green); }
-  .cd-target-flag.miss { background: rgba(226,92,92,0.1); color: var(--red); }
-  .cd-chevron { color: var(--text3); font-size: 0.75rem; transition: transform 0.2s; flex-shrink: 0; }
-  .cd-card.open .cd-chevron { transform: rotate(180deg); }
-  .cd-body { display: none; border-top: 1px solid var(--border); padding: 0 18px 16px; }
-  .cd-card.open .cd-body { display: block; }
-  .cd-site-rows { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-  .cd-site-row { display: grid; grid-template-columns: 130px 1fr 80px; align-items: center; gap: 10px; }
-  .cd-site-name { font-size: 0.78rem; color: var(--text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cd-bar-wrap { background: var(--bg3); border-radius: 4px; height: 8px; position: relative; overflow: hidden; }
-  .cd-bar { height: 100%; border-radius: 4px; background: var(--bg4); transition: width 0.5s ease; }
-  .cd-bar.cheapest { background: var(--green); }
-  .cd-bar.expensive { background: var(--red); opacity: 0.4; }
-  .cd-bar.mid { background: var(--gold); opacity: 0.55; }
-  .cd-site-price { font-family: 'DM Mono', monospace; font-size: 0.82rem; color: var(--text); text-align: right; }
-  .cd-site-price.cheapest { color: var(--green); }
-  .cd-updated { font-size: 0.68rem; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 10px; }
-  .cd-no-data {
-    padding: 10px 0; font-size: 0.8rem; color: var(--text3);
-    font-style: italic;
-  }
-  .cd-target-line {
-    display: flex; align-items: center; gap: 8px; margin-top: 10px;
-    padding: 8px 12px; border-radius: 8px; font-size: 0.78rem;
-    background: var(--bg3); border: 1px solid var(--border);
-  }
-  .cd-filter-row {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 1.2rem; flex-wrap: wrap;
-  }
-  .cd-filter-btn {
-    padding: 5px 14px; border-radius: 20px; font-size: 0.78rem;
-    border: 1px solid var(--border2); background: transparent;
-    color: var(--text2); cursor: pointer; transition: all 0.15s;
-    font-family: 'Syne', sans-serif;
-  }
-  .cd-filter-btn.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
-  .cd-stats-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.2rem;
-  }
-  .cd-stat {
-    background: var(--bg2); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 12px 14px;
-  }
-  .cd-stat-label { font-size: 0.68rem; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 5px; }
-  .cd-stat-value { font-family: 'DM Mono', monospace; font-size: 1.1rem; font-weight: 500; color: var(--text); }
-  .cd-stat-value.green { color: var(--green); }
-  .cd-stat-value.gold { color: var(--gold); }
-
-  /* ── NO AUTH PANEL ── */
-  .no-auth-panel {
-    text-align: center; padding: 3.5rem 2rem;
-    color: var(--text2); font-size: 0.88rem;
-  }
-  .no-auth-icon { font-size: 2.2rem; margin-bottom: 1rem; opacity: 0.35; }
-  .no-auth-title { font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--text); margin-bottom: 0.5rem; }
+/* ── TOAST ── */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:500;background:var(--text);color:#fff;border-radius:9px;padding:11px 18px;font-size:.82rem;font-weight:500;max-width:300px;transform:translateY(20px);opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{background:#1b5e20}
+.toast.err{background:#b71c1c}
 </style>
 </head>
 <body>
 
-<!-- ══ TOPBAR ══ -->
-<header class="topbar">
-  <div class="logo">
-    <span class="logo-dot"></span>
-    SmartPrice <span style="color:var(--gold);font-style:italic;"> AI</span>
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo" onclick="goHome()">
+    <div class="nav-logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+    </div>
+    PriceTrack
   </div>
-  <div class="topbar-right" id="topbar-right">
-    <button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
-    <button class="btn btn-gold" onclick="openAuth('signup')">Sign Up</button>
+  <div class="nav-links">
+    <div class="nav-link active" id="nl-home" onclick="goHome()">Home</div>
+    <div class="nav-link" id="nl-watchlist" onclick="switchPage('watchlist')">Watchlist</div>
+    <div class="nav-link" id="nl-alerts" onclick="switchPage('alerts')">Alerts</div>
+    <div class="nav-link" id="nl-compare" onclick="switchPage('compare')">Compare</div>
   </div>
-</header>
+  <div class="nav-right" id="nav-right">
+    <button class="btn btn-outline" onclick="openAuth('login')">Sign in</button>
+    <button class="btn btn-primary" onclick="openAuth('signup')">Get started</button>
+  </div>
+</nav>
 
-<!-- ══ HERO ══ -->
-<section class="hero">
-  <h1 class="hero-title">Track <em>smarter,</em><br />buy cheaper.</h1>
-  <p class="hero-sub">Real-time price comparison, intelligent alerts & watchlist —<br/>all powered by live market data.</p>
-  <div class="search-wrap">
-    <input type="text" id="search-input" placeholder="Search for a product (e.g. iPhone 15, Sony WH-1000XM5)…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="btn-search" onclick="doSearch()">
-      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      Search
-    </button>
-  </div>
-  <div class="best-deal-banner" id="best-deal-banner">
-    <div>
-      <div class="deal-label">🔥 Best deal of the day</div>
-      <div class="deal-title" id="deal-title">—</div>
-      <div style="font-size:0.72rem;color:var(--text3);margin-top:3px;" id="deal-site"></div>
+<!-- HOME PAGE -->
+<div id="page-home">
+  <section class="hero">
+    <div class="hero-pill"><span class="hero-pill-dot"></span>50+ stores tracked in real time</div>
+    <h1 class="hero-title">Track any price.<br/>Buy at the <span class="accent">perfect</span> moment.</h1>
+    <p class="hero-sub">India's smartest price tracker — get alerts, view history<br/>and compare deals across Amazon, Flipkart and more.</p>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="search-input" placeholder="Search for any product to track…" onkeydown="if(event.key==='Enter')doSearch()"/>
+      <button class="search-btn" onclick="doSearch()">Search</button>
     </div>
-    <div class="deal-prices">
-      <div class="deal-current" id="deal-current">—</div>
-      <div class="deal-was" id="deal-was"></div>
-      <div class="deal-save" id="deal-save"></div>
+    <div class="trust-badges">
+      <span class="trust-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Free forever</span>
+      <span class="trust-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>No signup required</span>
+      <span class="trust-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Instant alerts</span>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ══ MAIN ══ -->
-<main class="main">
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab('search')" id="tab-search">Search Results</div>
-    <div class="tab" onclick="switchTab('watchlist')" id="tab-watchlist">Watchlist</div>
-    <div class="tab" onclick="switchTab('alerts')" id="tab-alerts">My Alerts</div>
-    <div class="tab" onclick="switchTab('compare-dash')" id="tab-compare-dash">⇄ Compare Dashboard</div>
-  </div>
+  <main class="main">
+    <div class="best-deal" id="best-deal">
+      <div>
+        <div class="deal-label">🔥 Best deal of the day</div>
+        <div class="deal-title" id="deal-title">—</div>
+        <div style="font-size:.7rem;color:var(--text3);margin-top:2px" id="deal-site"></div>
+      </div>
+      <div class="deal-prices">
+        <span class="deal-now" id="deal-now">—</span>
+        <span class="deal-was" id="deal-was"></span>
+        <span class="deal-save" id="deal-save"></span>
+      </div>
+    </div>
 
-  <!-- Search Results Panel -->
-  <div id="panel-search">
-    <div class="empty-state" id="search-empty">
-      <span>🔍</span>
-      Search for any product to compare prices across the web.
+    <div id="search-empty" class="empty"><span class="empty-icon">🔍</span>Search for any product above to start comparing prices.</div>
+    <div class="spinner-wrap" id="search-loading" style="display:none"><div class="spinner"></div>Fetching live prices across stores…</div>
+    <div id="search-hdr" class="section-hdr" style="display:none">
+      <span class="section-ttl">Results for "<span id="query-label"></span>"</span>
+      <span class="section-cnt" id="result-cnt"></span>
     </div>
-    <div class="loading-spinner" id="search-loading" style="display:none;">
-      <div class="spinner"></div> Fetching live prices…
+    
+    <div id="search-toolbar" class="search-toolbar" style="display:none">
+      <div class="toolbar-left">
+        <label class="toggle-switch">
+          <input type="checkbox" id="stock-filter" onchange="applyFiltersAndSort()">
+          <span class="slider"></span>
+        </label>
+        <span class="toolbar-label">In Stock Only</span>
+      </div>
+      <div class="toolbar-right">
+        <span class="toolbar-label">Sort by:</span>
+        <select id="sort-select" class="form-select toolbar-select" onchange="applyFiltersAndSort()">
+          <option value="default">Relevance</option>
+          <option value="price_low">Price: Low to High</option>
+          <option value="price_high">Price: High to Low</option>
+          <option value="store_az">Store (A-Z)</option>
+        </select>
+      </div>
     </div>
-    <div id="search-header" class="section-header" style="display:none;">
-      <span class="section-title">Results for "<span id="query-label"></span>"</span>
-      <span class="section-count" id="result-count"></span>
-    </div>
+
     <div class="product-grid" id="product-grid"></div>
-  </div>
 
-  <!-- Watchlist Panel -->
-  <div id="panel-watchlist" style="display:none;">
-    <div class="loading-spinner" id="wl-loading" style="display:none;"><div class="spinner"></div> Loading…</div>
-    <div class="watchlist-grid" id="watchlist-grid"></div>
-  </div>
-
-  <!-- Alerts Panel -->
-  <div id="panel-alerts" style="display:none;">
-    <div class="loading-spinner" id="al-loading" style="display:none;"><div class="spinner"></div> Loading…</div>
-    <div class="alerts-grid" id="alerts-grid"></div>
-  </div>
-
-  <!-- Compare Dashboard Panel -->
-  <div id="panel-compare-dash" style="display:none;">
-    <div class="loading-spinner" id="cd-loading" style="display:none;"><div class="spinner"></div> Fetching comparison data for your tracked products…</div>
-
-    <!-- Stats row (shown once data loads) -->
-    <div class="cd-stats-row" id="cd-stats" style="display:none;">
-      <div class="cd-stat">
-        <div class="cd-stat-label">Products Tracked</div>
-        <div class="cd-stat-value gold" id="cd-stat-count">—</div>
+    <div class="features" id="features-row">
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#eef2ff"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3949ab" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+        <div class="feat-title">Price history</div><div class="feat-sub">Up to 2 years back</div>
       </div>
-      <div class="cd-stat">
-        <div class="cd-stat-label">Total Potential Savings</div>
-        <div class="cd-stat-value green" id="cd-stat-savings">—</div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#e0f2f1"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00897b" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg></div>
+        <div class="feat-title">Drop alerts</div><div class="feat-sub">Email + push notify</div>
       </div>
-      <div class="cd-stat">
-        <div class="cd-stat-label">Alerts Below Target</div>
-        <div class="cd-stat-value" id="cd-stat-hits">—</div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#fff3e0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e65100" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
+        <div class="feat-title">Store compare</div><div class="feat-sub">Best price finder</div>
+      </div>
+      <div class="feature-card">
+        <div class="feat-icon" style="background:#f3e5f5"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8e24aa" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="feat-title">AI predictions</div><div class="feat-sub">Best time to buy</div>
       </div>
     </div>
+  </main>
+</div>
 
-    <!-- Filter row -->
-    <div class="cd-filter-row" id="cd-filter-row" style="display:none;">
-      <button class="cd-filter-btn active" id="cdfilter-all" onclick="cdFilter('all')">All</button>
-      <button class="cd-filter-btn" id="cdfilter-wl" onclick="cdFilter('wl')">Watchlist Only</button>
-      <button class="cd-filter-btn" id="cdfilter-al" onclick="cdFilter('al')">Alerts Only</button>
-      <button class="cd-filter-btn" id="cdfilter-savings" onclick="cdFilter('savings')">Has Savings</button>
-      <button class="cd-filter-btn" id="cdfilter-hit" onclick="cdFilter('hit')">Target Met</button>
+<!-- WATCHLIST PAGE -->
+<div id="page-watchlist" style="display:none">
+  <main class="main">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.03em">Watchlist</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-top:3px">Products you're tracking across stores</div>
     </div>
+    <div class="spinner-wrap" id="wl-loading" style="display:none"><div class="spinner"></div>Loading…</div>
+    <div class="wl-list" id="wl-list"></div>
+  </main>
+</div>
 
+<!-- ALERTS PAGE -->
+<div id="page-alerts" style="display:none">
+  <main class="main">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.03em">My Alerts</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-top:3px">Price drop &amp; restock notifications</div>
+    </div>
+    <div class="spinner-wrap" id="al-loading" style="display:none"><div class="spinner"></div>Loading…</div>
+    <div class="alerts-list" id="alerts-list"></div>
+  </main>
+</div>
+
+<!-- COMPARE DASHBOARD PAGE -->
+<div id="page-compare" style="display:none">
+  <main class="main">
+    <div style="margin-bottom:1.5rem">
+      <div style="font-size:1.4rem;font-weight:800;color:var(--text);letter-spacing:-.03em">Compare Dashboard</div>
+      <div style="font-size:.85rem;color:var(--text2);margin-top:3px">Live price comparison across all your tracked products</div>
+    </div>
+    <div class="spinner-wrap" id="cd-loading" style="display:none"><div class="spinner"></div>Fetching comparison data…</div>
+    <div class="cd-stats" id="cd-stats-row" style="display:none">
+      <div class="cd-stat"><div class="cd-stat-label">Products Tracked</div><div class="cd-stat-val" id="cd-stat-count">—</div></div>
+      <div class="cd-stat"><div class="cd-stat-label">Total Potential Savings</div><div class="cd-stat-val green" id="cd-stat-savings">—</div><div class="cd-stat-sub">vs highest recorded price</div></div>
+    </div>
+    <div class="cd-filter-row" id="cd-filter-row" style="display:none">
+      <button class="cd-chip active" id="cdf-all" onclick="cdFilter('all')">All</button>
+      <button class="cd-chip" id="cdf-wl" onclick="cdFilter('wl')">Watchlist Only</button>
+      <button class="cd-chip" id="cdf-al" onclick="cdFilter('al')">Alerts Only</button>
+      <button class="cd-chip" id="cdf-savings" onclick="cdFilter('savings')">Has Savings</button>
+    </div>
     <div class="cd-grid" id="cd-grid"></div>
-  </div>
-</main>
+  </main>
+</div>
 
-<!-- ══ AUTH MODAL ══ -->
-<div class="modal-overlay" id="auth-modal">
+<!-- AUTH MODAL -->
+<div class="overlay" id="auth-overlay">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">Welcome to SmartPrice AI</div>
-      <button class="modal-close" onclick="closeModal('auth-modal')">✕</button>
+    <div class="modal-hdr">
+      <div class="modal-title">Welcome to PriceTrack</div>
+      <button class="modal-close" onclick="closeOverlay('auth-overlay')">✕</button>
     </div>
     <div class="auth-tabs">
-      <div class="auth-tab active" id="auth-tab-login" onclick="switchAuthTab('login')">Sign In</div>
-      <div class="auth-tab" id="auth-tab-signup" onclick="switchAuthTab('signup')">Create Account</div>
+      <button class="auth-tab active" id="at-login" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" id="at-signup" onclick="switchAuthTab('signup')">Create Account</button>
     </div>
-    <div id="auth-form-login">
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="login-email" placeholder="you@email.com" /></div>
-      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="login-password" placeholder="••••••••" /></div>
+    <div id="af-login">
+      <div class="form-grp"><label class="form-label">Email</label><input class="form-input" type="email" id="login-email" placeholder="you@email.com"/></div>
+      <div class="form-grp"><label class="form-label">Password</label><input class="form-input" type="password" id="login-password" placeholder="••••••••"/></div>
       <div class="form-msg" id="login-msg"></div>
-      <button class="btn btn-gold btn-full" onclick="doLogin()">Sign In</button>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Sign In</button>
     </div>
-    <div id="auth-form-signup" style="display:none;">
-      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="signup-email" placeholder="you@email.com" /></div>
-      <div class="form-group"><label class="form-label">Password</label><input class="form-input" type="password" id="signup-password" placeholder="Min 8 characters" /></div>
+    <div id="af-signup" style="display:none">
+      <div class="form-grp"><label class="form-label">Email</label><input class="form-input" type="email" id="signup-email" placeholder="you@email.com"/></div>
+      <div class="form-grp"><label class="form-label">Password</label><input class="form-input" type="password" id="signup-password" placeholder="Min 8 characters"/></div>
       <div class="form-msg" id="signup-msg"></div>
-      <button class="btn btn-gold btn-full" onclick="doSignup()">Create Account</button>
+      <button class="btn btn-primary btn-full" onclick="doSignup()">Create Account</button>
     </div>
   </div>
 </div>
 
-<!-- ══ ALERT MODAL ══ -->
-<div class="modal-overlay" id="alert-modal">
+<!-- ALERT MODAL -->
+<div class="overlay" id="alert-overlay">
   <div class="modal">
-    <div class="modal-header">
+    <div class="modal-hdr">
       <div class="modal-title">Set Price Alert</div>
-      <button class="modal-close" onclick="closeModal('alert-modal')">✕</button>
+      <button class="modal-close" onclick="closeOverlay('alert-overlay')">✕</button>
     </div>
-    <div id="alert-login-prompt" class="login-prompt" style="display:none;">
-      You need to be signed in to set price alerts.
-      <span style="cursor:pointer;text-decoration:underline;" onclick="closeModal('alert-modal');openAuth('login')"> Sign in →</span>
-    </div>
+    <div class="login-hint" id="alert-login-hint" style="display:none">Sign in to receive email alerts. <span style="cursor:pointer;text-decoration:underline;font-weight:700" onclick="closeOverlay('alert-overlay');openAuth('login')">Sign in →</span></div>
     <div id="alert-form-inner">
-      <div class="alert-modal-product">
-        <strong id="alert-product-title">Product</strong>
-        <span id="alert-product-price"></span> · <span id="alert-product-site"></span>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Alert Type</label>
-        <select class="form-select" id="alert-type">
+      <div class="alert-preview"><strong id="ap-title">—</strong><span id="ap-price"></span> · <span id="ap-site"></span></div>
+      <div class="form-grp"><label class="form-label">Alert Type</label>
+        <select class="form-select" id="alert-type" onchange="toggleTargetField()">
           <option value="price">Price Drop Alert</option>
           <option value="restock">Restock Alert</option>
         </select>
       </div>
-      <div class="form-group" id="target-price-group">
-        <label class="form-label">Target Price (₹)</label>
-        <input class="form-input" type="number" id="alert-target-price" placeholder="e.g. 15000" />
-      </div>
+      <div class="form-grp" id="target-price-grp"><label class="form-label">Target Price (₹)</label><input class="form-input" type="number" id="alert-target" placeholder="e.g. 15000"/></div>
       <div class="form-msg" id="alert-msg"></div>
-      <button class="btn btn-gold btn-full" onclick="submitAlert()">Set Alert</button>
+      <button class="btn btn-primary btn-full" onclick="submitAlert()">Set Alert</button>
     </div>
   </div>
 </div>
 
-<!-- ══ COMPARE MODAL ══ -->
-<div class="modal-overlay" id="compare-modal">
+<!-- COMPARE MODAL -->
+<div class="overlay" id="compare-overlay">
   <div class="modal modal-lg">
-    <div class="modal-header">
-      <div class="modal-title" id="compare-modal-title">Price Comparison</div>
-      <button class="modal-close" onclick="closeModal('compare-modal')">✕</button>
-    </div>
-    <div class="loading-spinner" id="compare-loading" style="display:none;"><div class="spinner"></div></div>
+    <div class="modal-hdr"><div class="modal-title" id="cmp-title">Price Comparison</div><button class="modal-close" onclick="closeOverlay('compare-overlay')">✕</button></div>
+    <div class="spinner-wrap" id="cmp-loading" style="display:none"><div class="spinner"></div></div>
     <div class="compare-rows" id="compare-rows"></div>
   </div>
 </div>
 
-<!-- ══ HISTORY MODAL ══ -->
-<div class="modal-overlay" id="history-modal">
+<!-- HISTORY MODAL -->
+<div class="overlay" id="history-overlay">
   <div class="modal modal-lg">
-    <div class="modal-header">
-      <div class="modal-title" id="history-modal-title">Price History</div>
-      <button class="modal-close" onclick="closeModal('history-modal')">✕</button>
-    </div>
-    <div class="loading-spinner" id="history-loading" style="display:none;"><div class="spinner"></div></div>
-    <div class="history-rows" id="history-rows"></div>
+    <div class="modal-hdr"><div class="modal-title" id="hist-title">Price History</div><button class="modal-close" onclick="closeOverlay('history-overlay')">✕</button></div>
+    <div class="spinner-wrap" id="hist-loading" style="display:none"><div class="spinner"></div></div>
+    <div class="hist-rows" id="hist-rows"></div>
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
 <div class="toast" id="toast"></div>
 
 <script>
-/* ── STATE ── */
-let currentUser = null;
-let alertTarget = null;
+let currentUser=null,alertTarget=null,cdAllItems=[];
 
-/* ── INIT ── */
-document.addEventListener('DOMContentLoaded', () => {
-  checkAuth();
-  loadBestDeal();
-  document.getElementById('alert-type').addEventListener('change', e => {
-    document.getElementById('target-price-group').style.display = e.target.value === 'restock' ? 'none' : 'block';
-  });
+document.addEventListener('DOMContentLoaded',()=>{
+  checkAuth(); loadBestDeal();
+  document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 });
 
-/* ── AUTH ── */
-async function checkAuth() {
-  try {
-    const r = await fetch('/auth-status', { credentials: 'include' });
-    const d = await r.json();
-    currentUser = d.logged_in ? d : null;
-    updateTopbar();
-  } catch {}
+/* AUTH */
+async function checkAuth(){
+  try{const r=await fetch('/auth-status',{credentials:'include'});const d=await r.json();currentUser=d.logged_in?d:null;renderNav();}catch{}
 }
-
-function updateTopbar() {
-  const el = document.getElementById('topbar-right');
-  if (currentUser && currentUser.logged_in) {
-    el.innerHTML = `
-      <div class="auth-badge" title="${currentUser.email}">⬡ ${currentUser.email}</div>
-      <button class="btn btn-ghost" onclick="doLogout()">Sign Out</button>
-    `;
-  } else {
-    el.innerHTML = `
-      <button class="btn btn-ghost" onclick="openAuth('login')">Sign In</button>
-      <button class="btn btn-gold" onclick="openAuth('signup')">Sign Up</button>
-    `;
+function renderNav(){
+  const el=document.getElementById('nav-right');
+  if(currentUser?.logged_in){
+    el.innerHTML=`<div class="user-chip"><div class="user-avatar">${currentUser.email[0].toUpperCase()}</div><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${currentUser.email}</span></div><button class="btn btn-outline" onclick="doLogout()">Sign out</button>`;
+  }else{
+    el.innerHTML=`<button class="btn btn-outline" onclick="openAuth('login')">Sign in</button><button class="btn btn-primary" onclick="openAuth('signup')">Get started</button>`;
   }
 }
-
-function openAuth(tab) {
-  switchAuthTab(tab);
-  openModal('auth-modal');
+function openAuth(tab){switchAuthTab(tab);openOverlay('auth-overlay');}
+function switchAuthTab(tab){
+  document.getElementById('at-login').className='auth-tab'+(tab==='login'?' active':'');
+  document.getElementById('at-signup').className='auth-tab'+(tab==='signup'?' active':'');
+  document.getElementById('af-login').style.display=tab==='login'?'block':'none';
+  document.getElementById('af-signup').style.display=tab==='signup'?'block':'none';
+}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  const msg=document.getElementById('login-msg');
+  if(!email||!pass){setMsg(msg,'Email and password required.','err');return;}
+  const r=await fetch('/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+  const d=await r.json();
+  if(r.ok){currentUser={logged_in:true,email};renderNav();closeOverlay('auth-overlay');toast('Signed in as '+email,'ok');}
+  else setMsg(msg,d.error,'err');
+}
+async function doSignup(){
+  const email=document.getElementById('signup-email').value.trim();
+  const pass=document.getElementById('signup-password').value;
+  const msg=document.getElementById('signup-msg');
+  if(!email||!pass){setMsg(msg,'All fields required.','err');return;}
+  const r=await fetch('/signup',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password:pass})});
+  const d=await r.json();
+  if(r.ok){currentUser={logged_in:true,email};renderNav();closeOverlay('auth-overlay');toast('Account created! Welcome 🎉','ok');}
+  else setMsg(msg,d.error,'err');
+}
+async function doLogout(){
+  await fetch('/logout',{method:'POST',credentials:'include'});
+  currentUser=null;renderNav();toast('Signed out.','ok');goHome();
 }
 
-function switchAuthTab(tab) {
-  document.getElementById('auth-tab-login').className = 'auth-tab' + (tab === 'login' ? ' active' : '');
-  document.getElementById('auth-tab-signup').className = 'auth-tab' + (tab === 'signup' ? ' active' : '');
-  document.getElementById('auth-form-login').style.display = tab === 'login' ? 'block' : 'none';
-  document.getElementById('auth-form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+/* SEARCH */
+let currentProducts = [];
+
+async function doSearch(){
+  const q=document.getElementById('search-input').value.trim();
+  if(!q)return;
+  goHome();
+  hide('search-empty');showEl('search-loading',true);hide('search-hdr');hide('features-row');hide('search-toolbar');
+  document.getElementById('product-grid').innerHTML='';
+  try{
+    const r=await fetch('/search?q='+encodeURIComponent(q),{credentials:'include'});
+    currentProducts=await r.json();
+    hide('search-loading');
+    document.getElementById('query-label').textContent=q;
+    document.getElementById('result-cnt').textContent=currentProducts.length+' results';
+    showEl('search-hdr');
+    if(!currentProducts.length){showEl('search-empty');return;}
+    showEl('search-toolbar', true);
+    applyFiltersAndSort();
+  }catch{hide('search-loading');toast('Search failed. Check your connection.','err');}
 }
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const pass = document.getElementById('login-password').value;
-  const msg = document.getElementById('login-msg');
-  if (!email || !pass) { setMsg(msg, 'Email and password required.', 'err'); return; }
-  const r = await fetch('/login', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
-  const d = await r.json();
-  if (r.ok) {
-    currentUser = { logged_in: true, email };
-    updateTopbar();
-    closeModal('auth-modal');
-    showToast('Signed in as ' + email, 'ok');
-  } else { setMsg(msg, d.error, 'err'); }
+function parsePriceToNum(priceStr) {
+  if (!priceStr || priceStr === "N/A") return 0;
+  return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
 }
 
-async function doSignup() {
-  const email = document.getElementById('signup-email').value.trim();
-  const pass = document.getElementById('signup-password').value;
-  const msg = document.getElementById('signup-msg');
-  if (!email || !pass) { setMsg(msg, 'All fields required.', 'err'); return; }
-  const r = await fetch('/signup', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password: pass }) });
-  const d = await r.json();
-  if (r.ok) {
-    currentUser = { logged_in: true, email };
-    updateTopbar();
-    closeModal('auth-modal');
-    showToast('Account created! Welcome 🎉', 'ok');
-  } else { setMsg(msg, d.error, 'err'); }
-}
-
-async function doLogout() {
-  await fetch('/logout', { method: 'POST', credentials: 'include' });
-  currentUser = null;
-  updateTopbar();
-  showToast('Signed out.', 'ok');
-  if (document.getElementById('panel-watchlist').style.display !== 'none' ||
-      document.getElementById('panel-alerts').style.display !== 'none') {
-    switchTab('search');
+function applyFiltersAndSort() {
+  let filtered = [...currentProducts];
+  
+  // Filter by In Stock
+  const stockOnly = document.getElementById('stock-filter').checked;
+  if (stockOnly) {
+    filtered = filtered.filter(p => p.in_stock);
   }
-}
-
-/* ── SEARCH ── */
-async function doSearch() {
-  const q = document.getElementById('search-input').value.trim();
-  if (!q) return;
-  switchTab('search');
-  document.getElementById('search-empty').style.display = 'none';
-  document.getElementById('search-loading').style.display = 'flex';
-  document.getElementById('search-header').style.display = 'none';
-  document.getElementById('product-grid').innerHTML = '';
-  try {
-    const r = await fetch('/search?q=' + encodeURIComponent(q), { credentials: 'include' });
-    const data = await r.json();
-    document.getElementById('search-loading').style.display = 'none';
-    document.getElementById('query-label').textContent = q;
-    document.getElementById('result-count').textContent = data.length + ' results';
-    document.getElementById('search-header').style.display = 'flex';
-    if (!data.length) { document.getElementById('search-empty').style.display = 'block'; return; }
-    renderProducts(data);
-  } catch (e) {
-    document.getElementById('search-loading').style.display = 'none';
-    showToast('Search failed. Check your connection.', 'err');
+  
+  // Sort
+  const sortBy = document.getElementById('sort-select').value;
+  if (sortBy === 'price_low') {
+    filtered.sort((a, b) => parsePriceToNum(a.price) - parsePriceToNum(b.price));
+  } else if (sortBy === 'price_high') {
+    filtered.sort((a, b) => parsePriceToNum(b.price) - parsePriceToNum(a.price));
+  } else if (sortBy === 'store_az') {
+    filtered.sort((a, b) => (a.site || "").localeCompare(b.site || ""));
   }
+  
+  document.getElementById('result-cnt').textContent=filtered.length+' results';
+  renderProducts(filtered);
 }
 
-function renderProducts(products) {
-  const grid = document.getElementById('product-grid');
-  grid.innerHTML = '';
-  products.forEach(p => {
-    const stars = p.rating ? '★'.repeat(Math.round(p.rating)) + '☆'.repeat(5 - Math.round(p.rating)) : '';
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <div class="card-img-wrap">
-        ${p.image ? `<img src="${p.image}" alt="" loading="lazy" onerror="this.style.display='none'" />` : ''}
-        ${!p.in_stock ? '<span class="out-of-stock-badge">Out of Stock</span>' : ''}
+function renderProducts(products){
+  const grid=document.getElementById('product-grid');
+  grid.innerHTML='';
+  if (!products.length) {
+    grid.innerHTML='<div style="grid-column: 1/-1" class="empty">No products match your filters.</div>';
+    return;
+  }
+  products.forEach(p=>{
+    const stars=p.rating?'★'.repeat(Math.round(p.rating))+'☆'.repeat(5-Math.round(p.rating)):'';
+    const barW=p.rating?Math.round((p.rating/5)*100):0;
+    const card=document.createElement('div');
+    card.className='pcard';
+    card.innerHTML=`
+      <div class="pcard-img">
+        ${p.image?`<img src="${p.image}" alt="" loading="lazy" onerror="this.style.display='none'"/>`:'<span style="font-size:2rem;opacity:.15">📦</span>'}
+        ${p.in_stock?'<div class="live-badge">LIVE</div>':'<div class="oos-badge">Out of stock</div>'}
       </div>
-      <div class="card-body">
-        <div class="card-site">${p.site}</div>
-        <div class="card-title">${p.title}</div>
-        <div class="card-price">${p.price}</div>
-        ${p.rating ? `<div class="card-rating"><span class="stars" style="letter-spacing:1px;">${stars}</span> ${p.rating.toFixed(1)} ${p.reviews ? `<span style="color:var(--text3);">(${p.reviews.toLocaleString()})</span>` : ''}</div>` : ''}
+      <div class="pcard-body">
+        <div class="pcard-source">${p.site}</div>
+        <div class="pcard-name">${p.title}</div>
+        <div class="pcard-price">${p.price}</div>
+        ${p.rating?`<div class="pcard-rating"><span class="stars">${stars}</span>${p.rating.toFixed(1)} ${p.reviews?`<span style="color:var(--text3)">(${Number(p.reviews).toLocaleString()})</span>`:''}</div><div class="pcard-bar"><div class="pcard-bar-fill" style="width:${barW}%"></div></div>`:''}
       </div>
-      <div class="card-actions">
-        <div class="card-btn-row">
-          <button class="card-btn card-btn-primary" onclick='addToWatchlist(${JSON.stringify(p).replace(/'/g,"&#39;")})'>+ Watchlist</button>
-          <button class="card-btn card-btn-secondary" onclick='openAlertModal(${JSON.stringify(p).replace(/'/g,"&#39;")})'>🔔 Alert</button>
-        </div>
-        <div class="card-btn-row">
-          <button class="card-btn card-btn-secondary card-btn-view" onclick='openCompare("${encodeURIComponent(p.title)}")'>Compare Sites</button>
-          <button class="card-btn card-btn-secondary card-btn-view" onclick='openHistory("${encodeURIComponent(p.title)}")'>History</button>
-          ${p.link && p.link !== '#' ? `<a href="${p.link}" target="_blank" class="card-btn card-btn-secondary card-btn-view" style="display:flex;align-items:center;justify-content:center;text-decoration:none;">View ↗</a>` : ''}
-        </div>
+      <div class="pcard-actions">
+        <button class="pact pact-primary" onclick='addToWatchlist(${sj(p)})'>+ Watchlist</button>
+        <button class="pact pact-ghost" onclick='openAlertModal(${sj(p)})'>🔔 Alert</button>
+      </div>
+      <div class="pcard-sub-row">
+        <button class="pact pact-link" onclick='openCompare("${encodeURIComponent(p.title)}")'>Compare</button>
+        <button class="pact pact-link" onclick='openHistory("${encodeURIComponent(p.title)}")'>History</button>
+        ${p.link&&p.link!=='#'?`<a href="${p.link}" target="_blank" class="pact pact-link" style="text-decoration:none;text-align:center">View ↗</a>`:''}
       </div>`;
     grid.appendChild(card);
   });
 }
 
-/* ── BEST DEAL ── */
-async function loadBestDeal() {
-  try {
-    const r = await fetch('/best-deal', { credentials: 'include' });
-    if (!r.ok) return;
-    const d = await r.json();
-    document.getElementById('deal-title').textContent = d.title;
-    document.getElementById('deal-site').textContent = d.site;
-    document.getElementById('deal-current').textContent = '₹' + d.current_price.toLocaleString();
-    document.getElementById('deal-was').textContent = 'was ₹' + d.highest_price.toLocaleString();
-    document.getElementById('deal-save').textContent = 'Save ₹' + d.savings.toLocaleString();
-    document.getElementById('best-deal-banner').classList.add('visible');
-  } catch {}
+/* BEST DEAL */
+async function loadBestDeal(){
+  try{
+    const r=await fetch('/best-deal',{credentials:'include'});
+    if(!r.ok)return;
+    const d=await r.json();
+    document.getElementById('deal-title').textContent=d.title;
+    document.getElementById('deal-site').textContent=d.site;
+    document.getElementById('deal-now').textContent='₹'+d.current_price.toLocaleString('en-IN');
+    document.getElementById('deal-was').textContent='was ₹'+d.highest_price.toLocaleString('en-IN');
+    document.getElementById('deal-save').textContent='Save ₹'+d.savings.toLocaleString('en-IN');
+    document.getElementById('best-deal').classList.add('show');
+  }catch{}
 }
 
-/* ── WATCHLIST ── */
-async function loadWatchlist() {
-  const grid = document.getElementById('watchlist-grid');
-  document.getElementById('wl-loading').style.display = 'flex';
-  grid.innerHTML = '';
-  try {
-    const r = await fetch('/watchlist', { credentials: 'include' });
-    const data = await r.json();
-    document.getElementById('wl-loading').style.display = 'none';
-    if (!data.length) {
-      grid.innerHTML = '<div class="empty-state"><span>📋</span>Your watchlist is empty.<br/>Add products from search results.</div>';
-      return;
-    }
-    data.forEach(w => {
-      const row = document.createElement('div');
-      row.className = 'watchlist-item';
-      row.innerHTML = `
-        ${w.image ? `<img class="wl-img" src="${w.image}" onerror="this.style.display='none'" />` : '<div class="wl-img"></div>'}
+/* WATCHLIST */
+async function loadWatchlist(){
+  const list=document.getElementById('wl-list');
+  if(!currentUser?.logged_in){
+    list.innerHTML=`<div class="no-auth-panel"><span style="font-size:2rem;opacity:.3;display:block;margin-bottom:.75rem">📋</span><div class="no-auth-title">Sign in to view watchlist</div><p style="font-size:.82rem;color:var(--text2);margin-top:.4rem">Your watchlist is private and synced across devices.</p><button class="btn btn-primary" style="margin-top:1rem;padding:8px 20px" onclick="openAuth('login')">Sign in</button></div>`;
+    return;
+  }
+  showEl('wl-loading',true);list.innerHTML='';
+  try{
+    const r=await fetch('/watchlist',{credentials:'include'});
+    const data=await r.json();
+    hide('wl-loading');
+    if(!data.length){list.innerHTML='<div class="empty"><span class="empty-icon">📋</span>Your watchlist is empty.<br/>Add products from search results.</div>';return;}
+    data.forEach(w=>{
+      const row=document.createElement('div');row.className='wl-row';
+      row.innerHTML=`
+        ${w.image?`<img class="wl-img" src="${w.image}" onerror="this.style.display='none'"/>`:'<div class="wl-img"></div>'}
         <div class="wl-info">
           <div class="wl-title">${w.title}</div>
-          <div class="wl-meta">
-            <span class="wl-price">${w.price}</span>
-            <span class="wl-site">${w.site}</span>
-            <span class="wl-date">${w.added_at}</span>
-          </div>
+          <div class="wl-meta"><span class="wl-price">${w.price}</span><span class="wl-site">${w.site}</span><span class="wl-date">${w.added_at}</span></div>
         </div>
-        <div class="wl-actions">
-          ${w.link && w.link !== '#' ? `<a href="${w.link}" target="_blank" class="icon-btn view" title="View product">↗</a>` : ''}
-          <button class="icon-btn" title="Remove" onclick="removeWatchlist(${w.id}, this)">✕</button>
+        <div class="wl-btns">
+          ${w.link&&w.link!=='#'?`<a href="${w.link}" target="_blank" class="icon-btn view">↗</a>`:''}
+          <button class="icon-btn" onclick="removeWatchlist(${w.id},this)">✕</button>
         </div>`;
-      grid.appendChild(row);
+      list.appendChild(row);
     });
-  } catch {
-    document.getElementById('wl-loading').style.display = 'none';
-    grid.innerHTML = '<div class="empty-state">Failed to load watchlist.</div>';
-  }
+  }catch{hide('wl-loading');}
+}
+async function addToWatchlist(p){
+  if(!currentUser?.logged_in){openAuth('login');toast('Sign in to save to watchlist','err');return;}
+  const r=await fetch('/watchlist',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:p.title,price:p.price,site:p.site,image:p.image,link:p.link})});
+  const d=await r.json();
+  if(r.ok){toast(d.message||'Added to watchlist','ok');}else{toast(d.error||'Failed to add','err');}
+}
+async function removeWatchlist(id,btn){
+  const r=await fetch('/watchlist/'+id,{method:'DELETE',credentials:'include'});
+  if(r.ok){btn.closest('.wl-row').remove();toast('Removed','ok');}
 }
 
-async function addToWatchlist(product) {
-  const r = await fetch('/watchlist', {
-    method: 'POST', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: product.title, price: product.price, site: product.site, image: product.image, link: product.link })
-  });
-  const d = await r.json();
-  showToast(d.message || 'Added to watchlist', 'ok');
-}
-
-async function removeWatchlist(id, btn) {
-  const r = await fetch('/watchlist/' + id, { method: 'DELETE', credentials: 'include' });
-  if (r.ok) {
-    btn.closest('.watchlist-item').remove();
-    showToast('Removed from watchlist', 'ok');
-  }
-}
-
-/* ── ALERTS ── */
-async function loadAlerts() {
-  if (!currentUser || !currentUser.logged_in) {
-    document.getElementById('alerts-grid').innerHTML = `
-      <div class="no-auth-panel">
-        <div class="no-auth-icon">🔔</div>
-        <div class="no-auth-title">Sign in to view alerts</div>
-        <p style="font-size:0.85rem;margin-top:0.5rem;">Price alerts require an account so we can email you when prices drop.</p>
-        <button class="btn btn-gold" style="margin-top:1.2rem;padding:8px 22px;" onclick="openAuth('login')">Sign In</button>
-      </div>`;
+/* ALERTS */
+async function loadAlerts(){
+  const list=document.getElementById('alerts-list');
+  if(!currentUser?.logged_in){
+    list.innerHTML=`<div class="no-auth-panel"><span style="font-size:2rem;opacity:.3;display:block;margin-bottom:.75rem">🔔</span><div class="no-auth-title">Sign in to view alerts</div><p style="font-size:.82rem;color:var(--text2);margin-top:.4rem">Alerts need an account so we can email you when prices drop.</p><button class="btn btn-primary" style="margin-top:1rem;padding:8px 20px" onclick="openAuth('login')">Sign in</button></div>`;
     return;
   }
-  const grid = document.getElementById('alerts-grid');
-  document.getElementById('al-loading').style.display = 'flex';
-  grid.innerHTML = '';
-  try {
-    const r = await fetch('/alerts', { credentials: 'include' });
-    const data = await r.json();
-    document.getElementById('al-loading').style.display = 'none';
-    if (!data.length) {
-      grid.innerHTML = '<div class="empty-state"><span>🔔</span>No alerts set.<br/>Set an alert from any search result.</div>';
-      return;
-    }
-    data.forEach(a => {
-      const row = document.createElement('div');
-      row.className = 'alert-item';
-      row.innerHTML = `
-        <div class="alert-icon ${a.alert_type}">${a.alert_type === 'price' ? '₹' : '📦'}</div>
+  showEl('al-loading',true);list.innerHTML='';
+  try{
+    const r=await fetch('/alerts',{credentials:'include'});
+    const data=await r.json();
+    hide('al-loading');
+    if(!data.length){list.innerHTML='<div class="empty"><span class="empty-icon">🔔</span>No alerts set yet.<br/>Set an alert from any search result.</div>';return;}
+    data.forEach(a=>{
+      const row=document.createElement('div');row.className='alert-row';
+      row.innerHTML=`
+        <div class="alert-icon-box ${a.alert_type}">${a.alert_type==='price'?'₹':'📦'}</div>
         <div class="alert-info">
-          <div class="alert-title">${a.title}</div>
-          <div class="alert-meta">
-            <span class="alert-type-badge ${a.alert_type}">${a.alert_type === 'price' ? 'Price Drop' : 'Restock'}</span>
-            ${a.target_price ? `<span class="alert-target">Target: ₹${a.target_price.toLocaleString()}</span>` : ''}
-            <span style="font-size:0.72rem;color:var(--text3);font-family:'DM Mono',monospace;">${a.added_at}</span>
+          <div class="alert-name">${a.title}</div>
+          <div class="alert-pills">
+            <span class="pill ${a.alert_type==='price'?'pill-blue':'pill-green'}">${a.alert_type==='price'?'Price Drop':'Restock'}</span>
+            ${a.target_price?`<span style="font-size:.8rem;color:var(--text2)">Target: ₹${a.target_price.toLocaleString('en-IN')}</span>`:''}
+            <span style="font-size:.7rem;color:var(--text3)">${a.added_at}</span>
           </div>
         </div>
-        <div class="wl-actions">
-          ${a.link && a.link !== '#' ? `<a href="${a.link}" target="_blank" class="icon-btn view">↗</a>` : ''}
-          <button class="icon-btn" onclick="removeAlert(${a.id}, this)">✕</button>
+        <div class="wl-btns">
+          ${a.link&&a.link!=='#'?`<a href="${a.link}" target="_blank" class="icon-btn view">↗</a>`:''}
+          <button class="icon-btn" onclick="removeAlert(${a.id},this)">✕</button>
         </div>`;
-      grid.appendChild(row);
+      list.appendChild(row);
     });
-  } catch {
-    document.getElementById('al-loading').style.display = 'none';
+  }catch{hide('al-loading');}
+}
+function openAlertModal(p){
+  alertTarget=p;
+  document.getElementById('ap-title').textContent=p.title;
+  document.getElementById('ap-price').textContent=p.price;
+  document.getElementById('ap-site').textContent=p.site;
+  document.getElementById('alert-target').value='';
+  document.getElementById('alert-msg').textContent='';
+  document.getElementById('alert-type').value='price';
+  document.getElementById('target-price-grp').style.display='block';
+  if(!currentUser?.logged_in){
+    document.getElementById('alert-login-hint').style.display='block';
+    document.getElementById('alert-form-inner').style.opacity='.4';
+    document.getElementById('alert-form-inner').style.pointerEvents='none';
+  }else{
+    document.getElementById('alert-login-hint').style.display='none';
+    document.getElementById('alert-form-inner').style.opacity='1';
+    document.getElementById('alert-form-inner').style.pointerEvents='all';
   }
+  openOverlay('alert-overlay');
+}
+function toggleTargetField(){document.getElementById('target-price-grp').style.display=document.getElementById('alert-type').value==='restock'?'none':'block';}
+async function submitAlert(){
+  if(!alertTarget)return;
+  const type=document.getElementById('alert-type').value;
+  const target=type==='price'?parseFloat(document.getElementById('alert-target').value):null;
+  const msg=document.getElementById('alert-msg');
+  if(type==='price'&&(!target||isNaN(target))){setMsg(msg,'Enter a valid target price.','err');return;}
+  const r=await fetch('/alerts',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:alertTarget.title,price:alertTarget.price,site:alertTarget.site,link:alertTarget.link,target_price:target,alert_type:type})});
+  const d=await r.json();
+  if(r.ok||r.status===200){closeOverlay('alert-overlay');toast('Alert set! We\'ll email you when it drops.','ok');}
+  else setMsg(msg,d.error,'err');
+}
+async function removeAlert(id,btn){
+  const r=await fetch('/alerts/'+id,{method:'DELETE',credentials:'include'});
+  if(r.ok){btn.closest('.alert-row').remove();toast('Alert removed','ok');}
 }
 
-function openAlertModal(product) {
-  alertTarget = product;
-  document.getElementById('alert-product-title').textContent = product.title;
-  document.getElementById('alert-product-price').textContent = product.price;
-  document.getElementById('alert-product-site').textContent = product.site;
-  document.getElementById('alert-target-price').value = '';
-  document.getElementById('alert-msg').textContent = '';
-  document.getElementById('alert-type').value = 'price';
-  document.getElementById('target-price-group').style.display = 'block';
-  if (!currentUser || !currentUser.logged_in) {
-    document.getElementById('alert-login-prompt').style.display = 'block';
-    document.getElementById('alert-form-inner').style.opacity = '0.4';
-    document.getElementById('alert-form-inner').style.pointerEvents = 'none';
-  } else {
-    document.getElementById('alert-login-prompt').style.display = 'none';
-    document.getElementById('alert-form-inner').style.opacity = '1';
-    document.getElementById('alert-form-inner').style.pointerEvents = 'all';
-  }
-  openModal('alert-modal');
-}
-
-async function submitAlert() {
-  if (!alertTarget) return;
-  const type = document.getElementById('alert-type').value;
-  const target = type === 'price' ? parseFloat(document.getElementById('alert-target-price').value) : null;
-  const msg = document.getElementById('alert-msg');
-  if (type === 'price' && (!target || isNaN(target))) { setMsg(msg, 'Enter a valid target price.', 'err'); return; }
-  const r = await fetch('/alerts', {
-    method: 'POST', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: alertTarget.title, price: alertTarget.price, site: alertTarget.site, link: alertTarget.link, target_price: target, alert_type: type })
-  });
-  const d = await r.json();
-  if (r.ok || r.status === 200) {
-    closeModal('alert-modal');
-    showToast('Alert set! We\'ll email you when it drops.', 'ok');
-  } else { setMsg(msg, d.error, 'err'); }
-}
-
-async function removeAlert(id, btn) {
-  const r = await fetch('/alerts/' + id, { method: 'DELETE', credentials: 'include' });
-  if (r.ok) { btn.closest('.alert-item').remove(); showToast('Alert removed', 'ok'); }
-}
-
-/* ── COMPARE ── */
-async function openCompare(encodedTitle) {
-  const title = decodeURIComponent(encodedTitle);
-  document.getElementById('compare-modal-title').textContent = 'Price Comparison';
-  document.getElementById('compare-rows').innerHTML = '';
-  document.getElementById('compare-loading').style.display = 'flex';
-  openModal('compare-modal');
-  try {
-    const r = await fetch('/compare?title=' + encodedTitle, { credentials: 'include' });
-    const data = await r.json();
-    document.getElementById('compare-loading').style.display = 'none';
-    if (!data.length) {
-      document.getElementById('compare-rows').innerHTML = '<div class="empty-state" style="padding:2rem;">No comparison data yet. Search this product a few times to build history.</div>';
-      return;
-    }
-    data.forEach((row, i) => {
-      const el = document.createElement('div');
-      el.className = 'compare-row' + (i === 0 ? ' best' : '');
-      el.innerHTML = `
-        <span class="compare-site">${row.site}</span>
-        <span class="compare-price">₹${row.price.toLocaleString()}</span>
-        ${i === 0 ? '<span class="best-tag">Lowest</span>' : ''}
-        <span style="font-size:0.7rem;color:var(--text3);font-family:'DM Mono',monospace;">${row.date}</span>`;
+/* COMPARE MODAL */
+async function openCompare(enc){
+  const title=decodeURIComponent(enc);
+  document.getElementById('cmp-title').textContent='Compare: '+title.slice(0,40)+(title.length>40?'…':'');
+  document.getElementById('compare-rows').innerHTML='';
+  showEl('cmp-loading',true);openOverlay('compare-overlay');
+  try{
+    const r=await fetch('/compare?title='+enc,{credentials:'include'});
+    const data=await r.json();
+    hide('cmp-loading');
+    if(!data.length){document.getElementById('compare-rows').innerHTML='<div class="empty" style="padding:1.5rem">No comparison data yet. Search this product a few times to build history.</div>';return;}
+    data.forEach((row,i)=>{
+      const el=document.createElement('div');el.className='cmp-row'+(i===0?' best':'');
+      el.innerHTML=`<span class="cmp-site">${row.site}</span><span class="cmp-price">₹${row.price.toLocaleString('en-IN')}</span>${i===0?'<span class="cmp-best-tag">Lowest</span>':''}<span style="font-size:.68rem;color:var(--text3)">${row.date}</span>`;
       document.getElementById('compare-rows').appendChild(el);
     });
-  } catch {
-    document.getElementById('compare-loading').style.display = 'none';
-  }
+  }catch{hide('cmp-loading');}
 }
 
-/* ── HISTORY ── */
-async function openHistory(encodedTitle) {
-  const title = decodeURIComponent(encodedTitle);
-  document.getElementById('history-modal-title').textContent = title.length > 50 ? title.slice(0, 50) + '…' : title;
-  document.getElementById('history-rows').innerHTML = '';
-  document.getElementById('history-loading').style.display = 'flex';
-  openModal('history-modal');
-  try {
-    const r = await fetch('/history?q=' + encodedTitle, { credentials: 'include' });
-    const data = await r.json();
-    document.getElementById('history-loading').style.display = 'none';
-    if (!data.length) {
-      document.getElementById('history-rows').innerHTML = '<div class="empty-state" style="padding:2rem;">No history recorded yet.</div>';
-      return;
-    }
-    data.forEach(h => {
-      const el = document.createElement('div');
-      el.className = 'history-row';
-      el.innerHTML = `
-        <span class="history-title">${h.title}</span>
-        <span class="history-price">₹${h.price.toLocaleString()}</span>
-        <span class="history-date">${h.date}</span>`;
-      document.getElementById('history-rows').appendChild(el);
+/* HISTORY MODAL */
+async function openHistory(enc){
+  const title=decodeURIComponent(enc);
+  document.getElementById('hist-title').textContent=title.slice(0,50)+(title.length>50?'…':'');
+  document.getElementById('hist-rows').innerHTML='';
+  showEl('hist-loading',true);openOverlay('history-overlay');
+  try{
+    const r=await fetch('/history?q='+enc,{credentials:'include'});
+    const data=await r.json();
+    hide('hist-loading');
+    if(!data.length){document.getElementById('hist-rows').innerHTML='<div class="empty" style="padding:1.5rem">No history recorded yet.</div>';return;}
+    data.forEach(h=>{
+      const el=document.createElement('div');el.className='hist-row';
+      el.innerHTML=`<span class="hist-name">${h.title}</span><span class="hist-price">₹${h.price.toLocaleString('en-IN')}</span><span class="hist-date">${h.date}</span>`;
+      document.getElementById('hist-rows').appendChild(el);
     });
-  } catch {
-    document.getElementById('history-loading').style.display = 'none';
-  }
+  }catch{hide('hist-loading');}
 }
 
-/* ── TABS ── */
-function switchTab(tab) {
-  ['search', 'watchlist', 'alerts', 'compare-dash'].forEach(t => {
-    document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
-    document.getElementById('tab-' + t).className = 'tab' + (t === tab ? ' active' : '');
-  });
-  if (tab === 'watchlist') loadWatchlist();
-  if (tab === 'alerts') loadAlerts();
-  if (tab === 'compare-dash') loadCompareDashboard();
-}
-
-/* ── COMPARE DASHBOARD ── */
-let cdAllItems = [];   // [{title, source:'wl'|'al'|'both', price, link, target_price, alert_type, compareData:[]}]
-let cdActiveFilter = 'all';
-
-async function loadCompareDashboard() {
-  const grid = document.getElementById('cd-grid');
-  const loading = document.getElementById('cd-loading');
-  grid.innerHTML = '';
-  document.getElementById('cd-stats').style.display = 'none';
-  document.getElementById('cd-filter-row').style.display = 'none';
-  loading.style.display = 'flex';
-
-  try {
-    // Fetch watchlist and alerts in parallel
-    const [wlRes, alRes] = await Promise.all([
-      fetch('/watchlist', { credentials: 'include' }),
-      currentUser && currentUser.logged_in ? fetch('/alerts', { credentials: 'include' }) : Promise.resolve(null)
-    ]);
-
-    const watchlist = wlRes.ok ? await wlRes.json() : [];
-    const alerts = (alRes && alRes.ok) ? await alRes.json() : [];
-
-    // Merge and deduplicate by title
-    const map = {};
-    watchlist.forEach(w => {
-      map[w.title] = map[w.title] || { title: w.title, source: 'wl', price: w.price, link: w.link, target_price: null, alert_type: null };
-    });
-    alerts.forEach(a => {
-      if (map[a.title]) {
-        map[a.title].source = 'both';
-        map[a.title].target_price = a.target_price;
-        map[a.title].alert_type = a.alert_type;
-      } else {
-        map[a.title] = { title: a.title, source: 'al', price: a.price, link: a.link, target_price: a.target_price, alert_type: a.alert_type };
-      }
-    });
-
-    const items = Object.values(map);
-
-    if (!items.length) {
-      loading.style.display = 'none';
-      grid.innerHTML = '<div class="empty-state"><span>⇄</span>No tracked products yet.<br/>Add items to your Watchlist or set Alerts first.</div>';
-      return;
-    }
-
-    // Fetch /compare for each item in parallel
-    const withData = await Promise.all(items.map(async item => {
-      try {
-        const r = await fetch('/compare?title=' + encodeURIComponent(item.title), { credentials: 'include' });
-        const compareData = r.ok ? await r.json() : [];
-        return { ...item, compareData };
-      } catch { return { ...item, compareData: [] }; }
-    }));
-
-    cdAllItems = withData;
-    loading.style.display = 'none';
-
-    // Compute stats
-    let totalSavings = 0, targetHits = 0;
-    withData.forEach(item => {
-      if (item.compareData.length >= 2) {
-        const prices = item.compareData.map(r => r.price);
-        totalSavings += Math.max(...prices) - Math.min(...prices);
-      }
-      if (item.target_price && item.compareData.length) {
-        const lowest = Math.min(...item.compareData.map(r => r.price));
-        if (lowest <= item.target_price) targetHits++;
-      }
-    });
-
-    document.getElementById('cd-stat-count').textContent = withData.length;
-    document.getElementById('cd-stat-savings').textContent = '₹' + Math.round(totalSavings).toLocaleString();
-    document.getElementById('cd-stat-hits').textContent = targetHits + ' / ' + withData.filter(i => i.target_price).length;
-    document.getElementById('cd-stats').style.display = 'grid';
-    document.getElementById('cd-filter-row').style.display = 'flex';
-
-    cdActiveFilter = 'all';
-    document.querySelectorAll('.cd-filter-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('cdfilter-all').classList.add('active');
-
-    renderCdCards(cdAllItems);
-
-  } catch(e) {
-    document.getElementById('cd-loading').style.display = 'none';
-    document.getElementById('cd-grid').innerHTML = '<div class="empty-state">Failed to load dashboard data.</div>';
-  }
-}
-
-function cdFilter(filter) {
-  cdActiveFilter = filter;
-  document.querySelectorAll('.cd-filter-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('cdfilter-' + filter).classList.add('active');
-
-  let filtered = cdAllItems;
-  if (filter === 'wl') filtered = cdAllItems.filter(i => i.source === 'wl' || i.source === 'both');
-  else if (filter === 'al') filtered = cdAllItems.filter(i => i.source === 'al' || i.source === 'both');
-  else if (filter === 'savings') filtered = cdAllItems.filter(i => {
-    if (i.compareData.length < 2) return false;
-    const prices = i.compareData.map(r => r.price);
-    return Math.max(...prices) - Math.min(...prices) > 0;
-  });
-  else if (filter === 'hit') filtered = cdAllItems.filter(i => {
-    if (!i.target_price || !i.compareData.length) return false;
-    return Math.min(...i.compareData.map(r => r.price)) <= i.target_price;
-  });
-
-  renderCdCards(filtered);
-}
-
-function renderCdCards(items) {
-  const grid = document.getElementById('cd-grid');
-  grid.innerHTML = '';
-
-  if (!items.length) {
-    grid.innerHTML = '<div class="empty-state" style="padding:3rem;">No products match this filter.</div>';
+/* COMPARE DASHBOARD */
+async function loadCompareDashboard(){
+  const grid=document.getElementById('cd-grid');
+  grid.innerHTML='';hide('cd-stats-row');hide('cd-filter-row');
+  if(!currentUser?.logged_in){
+    grid.innerHTML=`<div class="no-auth-panel"><span style="font-size:2rem;opacity:.3;display:block;margin-bottom:.75rem">⇄</span><div class="no-auth-title">Sign in to compare products</div><p style="font-size:.82rem;color:var(--text2);margin-top:.4rem">Your dashboard compares products in your private watchlist and alerts.</p><button class="btn btn-primary" style="margin-top:1rem;padding:8px 20px" onclick="openAuth('login')">Sign in</button></div>`;
     return;
   }
-
-  items.forEach((item, idx) => {
-    const cd = item.compareData;
-    const prices = cd.map(r => r.price);
-    const lowestPrice = prices.length ? Math.min(...prices) : null;
-    const highestPrice = prices.length ? Math.max(...prices) : null;
-    const savings = (lowestPrice !== null && highestPrice !== null) ? highestPrice - lowestPrice : 0;
-
-    // Target hit check
-    let targetHit = false, targetLabel = '';
-    if (item.target_price && lowestPrice !== null) {
-      targetHit = lowestPrice <= item.target_price;
-      targetLabel = targetHit
-        ? `✓ Target met! ₹${Math.round(lowestPrice).toLocaleString()} ≤ ₹${item.target_price.toLocaleString()}`
-        : `Target: ₹${item.target_price.toLocaleString()} (need ₹${Math.round(lowestPrice - item.target_price).toLocaleString()} more drop)`;
-    }
-
-    const sourceLabel = item.source === 'both' ? 'WL + Alert' : (item.source === 'wl' ? 'Watchlist' : 'Alert');
-
-    const card = document.createElement('div');
-    card.className = 'cd-card';
-    card.dataset.index = idx;
-
-    card.innerHTML = `
-      <div class="cd-card-header" onclick="cdToggle(${idx})">
-        <span class="cd-source-badge ${item.source}">${sourceLabel}</span>
+  showEl('cd-loading',true);
+  try{
+    const [wlRes,alRes]=await Promise.all([
+      fetch('/watchlist',{credentials:'include'}),
+      fetch('/alerts',{credentials:'include'})
+    ]);
+    const watchlist=wlRes.ok?await wlRes.json():[];
+    const alerts=(alRes&&alRes.ok)?await alRes.json():[];
+    const map={};
+    watchlist.forEach(w=>{map[w.title]={title:w.title,source:'wl',price:w.price,link:w.link,target_price:null,alert_type:null};});
+    alerts.forEach(a=>{
+      if(map[a.title]){map[a.title].source='both';map[a.title].target_price=a.target_price;map[a.title].alert_type=a.alert_type;}
+      else map[a.title]={title:a.title,source:'al',price:a.price,link:a.link,target_price:a.target_price,alert_type:a.alert_type};
+    });
+    const items=Object.values(map);
+    if(!items.length){hide('cd-loading');grid.innerHTML='<div class="empty"><span class="empty-icon">⇄</span>No tracked products yet.<br/>Add items to your Watchlist or set Alerts first.</div>';return;}
+    const withData=await Promise.all(items.map(async item=>{
+      try{const r=await fetch('/compare?title='+encodeURIComponent(item.title),{credentials:'include'});const cd=r.ok?await r.json():[];return{...item,compareData:cd};}
+      catch{return{...item,compareData:[]};}
+    }));
+    cdAllItems=withData;hide('cd-loading');
+    let totalSavings=0;
+    withData.forEach(item=>{
+      if(item.compareData.length>=2){const p=item.compareData.map(r=>r.price);totalSavings+=Math.max(...p)-Math.min(...p);}
+    });
+    document.getElementById('cd-stat-count').textContent=withData.length;
+    document.getElementById('cd-stat-savings').textContent='₹'+Math.round(totalSavings).toLocaleString('en-IN');
+    showEl('cd-stats-row');showEl('cd-filter-row');
+    cdFilter('all');
+  }catch{hide('cd-loading');grid.innerHTML='<div class="empty">Failed to load.</div>';}
+}
+function cdFilter(f){
+  document.querySelectorAll('.cd-chip').forEach(b=>b.classList.remove('active'));
+  document.getElementById('cdf-'+f).classList.add('active');
+  let items=cdAllItems;
+  if(f==='wl')items=cdAllItems.filter(i=>i.source==='wl'||i.source==='both');
+  else if(f==='al')items=cdAllItems.filter(i=>i.source==='al'||i.source==='both');
+  else if(f==='savings')items=cdAllItems.filter(i=>{if(i.compareData.length<2)return false;const p=i.compareData.map(r=>r.price);return Math.max(...p)-Math.min(...p)>0;});
+  renderCdCards(items);
+}
+function renderCdCards(items){
+  const grid=document.getElementById('cd-grid');grid.innerHTML='';
+  if(!items.length){grid.innerHTML='<div class="empty" style="padding:2rem">No products match this filter.</div>';return;}
+  items.forEach((item,idx)=>{
+    const cd=item.compareData;
+    const prices=cd.map(r=>r.price);
+    const lo=prices.length?Math.min(...prices):null;
+    const hi=prices.length?Math.max(...prices):null;
+    const savings=lo!==null&&hi!==null?hi-lo:0;
+    let targetHit=false,targetLabel='';
+    if(item.target_price&&lo!==null){targetHit=lo<=item.target_price;targetLabel=targetHit?`✓ Target met — ₹${Math.round(lo).toLocaleString('en-IN')} ≤ ₹${item.target_price.toLocaleString('en-IN')}`:`₹${Math.round(lo-item.target_price).toLocaleString('en-IN')} away from target`;}
+    const sourceLbl=item.source==='both'?'WL + Alert':item.source==='wl'?'Watchlist':'Alert';
+    const card=document.createElement('div');card.className='cd-card';card.dataset.index=idx;
+    card.innerHTML=`
+      <div class="cd-card-hdr" onclick="cdToggle(${idx})">
+        <span class="cd-badge ${item.source}">${sourceLbl}</span>
         <span class="cd-card-title" title="${item.title}">${item.title}</span>
         <div class="cd-summary">
-          ${lowestPrice !== null ? `<span class="cd-low">₹${Math.round(lowestPrice).toLocaleString()}</span>` : '<span style="color:var(--text3);font-size:0.78rem;">No data</span>'}
-          ${savings > 0 ? `<span class="cd-high">₹${Math.round(highestPrice).toLocaleString()}</span><span class="cd-save">Save ₹${Math.round(savings).toLocaleString()}</span>` : ''}
-          ${item.target_price ? `<span class="cd-target-flag ${targetHit ? 'hit' : 'miss'}">${targetHit ? '🎯 Hit' : '⏳ Waiting'}</span>` : ''}
+          ${lo!==null?`<span class="cd-low">₹${Math.round(lo).toLocaleString('en-IN')}</span>`:'<span style="font-size:.75rem;color:var(--text3)">No data</span>'}
+          ${savings>0?`<span class="cd-high">₹${Math.round(hi).toLocaleString('en-IN')}</span><span class="cd-save">Save ₹${Math.round(savings).toLocaleString('en-IN')}</span>`:''}
+          ${item.target_price?`<span class="cd-flag ${targetHit?'hit':'miss'}">${targetHit?'🎯 Hit':'⏳ Waiting'}</span>`:''}
         </div>
         <span class="cd-chevron">▼</span>
       </div>
       <div class="cd-body">
-        ${item.target_price ? `
-          <div class="cd-target-line">
-            <span>${item.alert_type === 'restock' ? '📦' : '🎯'}</span>
-            <span style="color:var(--text2);">${targetLabel}</span>
-          </div>` : ''}
-        <div class="cd-site-rows">
-          ${cd.length ? renderCdSiteRows(cd, lowestPrice, highestPrice) : '<div class="cd-no-data">No cross-site data yet — search this product to build comparison history.</div>'}
-        </div>
-        ${cd.length ? `<div class="cd-updated">Last updated: ${cd[0].date}</div>` : ''}
-        ${item.link && item.link !== '#' ? `<a href="${item.link}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:0.78rem;color:var(--blue);text-decoration:none;">View product ↗</a>` : ''}
+        ${item.target_price?`<div class="cd-target-line"><span>${item.alert_type==='restock'?'📦':'🎯'}</span><span>${targetLabel}</span></div>`:''}
+        <div class="cd-site-rows">${cd.length?renderCdBars(cd,lo,hi):'<div class="cd-nodata">No comparison data yet — search this product to build history.</div>'}</div>
+        ${cd.length?`<div class="cd-updated">Updated: ${cd[0].date}</div>`:''}
+        ${item.link&&item.link!=='#'?`<a href="${item.link}" target="_blank" style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:.78rem;color:var(--blue2);text-decoration:none;font-weight:600">View product ↗</a>`:''}
       </div>`;
-
     grid.appendChild(card);
   });
 }
-
-function renderCdSiteRows(cd, lowestPrice, highestPrice) {
-  const range = highestPrice - lowestPrice || 1;
-  return cd.map((row, i) => {
-    const pct = lowestPrice === highestPrice ? 100 : Math.round(((row.price - lowestPrice) / range) * 100);
-    const barWidth = lowestPrice === highestPrice ? 100 : Math.max(15, 100 - pct);
-    const barClass = i === 0 ? 'cheapest' : (i === cd.length - 1 && cd.length > 1 ? 'expensive' : 'mid');
-    return `
-      <div class="cd-site-row">
-        <span class="cd-site-name" title="${row.site}">${row.site}</span>
-        <div class="cd-bar-wrap">
-          <div class="cd-bar ${barClass}" style="width:${barWidth}%"></div>
-        </div>
-        <span class="cd-site-price ${barClass}">₹${Math.round(row.price).toLocaleString()}</span>
-      </div>`;
+function renderCdBars(cd,lo,hi){
+  const range=hi-lo||1;
+  return cd.map((row,i)=>{
+    const pct=lo===hi?100:Math.max(18,100-Math.round(((row.price-lo)/range)*100));
+    const cls=i===0?'cheapest':i===cd.length-1&&cd.length>1?'priciest':'mid';
+    return `<div class="cd-site-row"><span class="cd-site-name">${row.site}</span><div class="cd-bar-track"><div class="cd-bar-fill ${cls}" style="width:${pct}%"></div></div><span class="cd-site-price ${cls}">₹${Math.round(row.price).toLocaleString('en-IN')}</span></div>`;
   }).join('');
 }
+function cdToggle(idx){document.querySelector(`.cd-card[data-index="${idx}"]`).classList.toggle('open');}
 
-function cdToggle(idx) {
-  const card = document.querySelector(`.cd-card[data-index="${idx}"]`);
-  card.classList.toggle('open');
+/* PAGE SWITCH */
+function switchPage(p){
+  ['home','watchlist','alerts','compare'].forEach(pg=>{
+    const el=document.getElementById('page-'+pg);if(el)el.style.display=pg===p?'block':'none';
+    const nl=document.getElementById('nl-'+pg);if(nl)nl.className='nav-link'+(pg===p?' active':'');
+  });
+  if(p==='watchlist')loadWatchlist();
+  if(p==='alerts')loadAlerts();
+  if(p==='compare')loadCompareDashboard();
 }
+function goHome(){switchPage('home');}
 
-/* ── MODAL HELPERS ── */
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(m => {
-  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-});
-
-/* ── TOAST ── */
-let toastTimer;
-function showToast(msg, type = 'ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast ' + type + ' show';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.classList.remove('show'); }, 3000);
-}
-
-function setMsg(el, text, type) {
-  el.textContent = text;
-  el.className = 'form-msg ' + (type === 'err' ? 'msg-err' : 'msg-ok');
+/* UTILS */
+function openOverlay(id){document.getElementById(id).classList.add('open');}
+function closeOverlay(id){document.getElementById(id).classList.remove('open');}
+function showEl(id,flex=false){const el=document.getElementById(id);if(el)el.style.display=flex?'flex':'block';}
+function hide(id){const el=document.getElementById(id);if(el)el.style.display='none';}
+function setMsg(el,text,type){el.textContent=text;el.className='form-msg '+(type==='err'?'err':'ok');}
+function sj(p){return JSON.stringify(p).replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+let _tt;
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast '+type+' show';
+  clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>
 </body>
