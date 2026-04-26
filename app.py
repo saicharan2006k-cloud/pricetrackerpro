@@ -104,12 +104,19 @@ class Alert(db.Model):
     site = db.Column(db.String(100))
     link = db.Column(db.String(1000))
     target_price = db.Column(db.Float, nullable=True)
+    alert_type = db.Column(db.String(50), default='price') # 'price' or 'restock'
     added_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 # Create tables
+from sqlalchemy import text
 with app.app_context():
     db.create_all()
+    try:
+        db.session.execute(text("ALTER TABLE alert ADD COLUMN alert_type VARCHAR(50) DEFAULT 'price'"))
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 @app.route("/")
@@ -165,6 +172,7 @@ def get_products(query):
         rating = p.get("rating", None)
         reviews = p.get("reviews", None)
         price_val = parse_price(price_str)
+        in_stock = True if price_val else False
 
         # ✅ Save to database
         if price_val and title != "N/A":
@@ -183,7 +191,8 @@ def get_products(query):
             "image": image,
             "link": link,
             "rating": rating,
-            "reviews": reviews
+            "reviews": reviews,
+            "in_stock": in_stock
         })
 
     db.session.commit()
@@ -196,11 +205,19 @@ def get_products(query):
         
         alerts = Alert.query.filter_by(title=title).all()
         for alert in alerts:
-            if alert.target_price and price_val < alert.target_price:
+            if alert.alert_type == 'price' and alert.target_price and price_val < alert.target_price:
                 user = User.query.get(alert.user_id)
                 if user:
                     send_email_alert(user.email, title, alert.target_price, price_val, p["link"])
                     alert.target_price = price_val  # Update so we don't keep emailing
+                    db.session.commit()
+            elif alert.alert_type == 'restock' and price_val > 0:
+                user = User.query.get(alert.user_id)
+                if user:
+                    # Notify about restock
+                    send_email_alert(user.email, title, "Out of Stock", price_val, p["link"])
+                    # Remove restock alert or change to price alert so it doesn't spam
+                    db.session.delete(alert)
                     db.session.commit()
 
     return final
@@ -220,8 +237,7 @@ def history():
     query = request.args.get("q", "").lower()
     title = request.args.get("title", "")
 
-    records = PriceHistory.query \
-        .filter(PriceHistory.query == query) \
+    records = db.session.query(PriceHistory) \
         .filter(PriceHistory.title == title) \
         .order_by(PriceHistory.date.asc()) \
         .all()
@@ -235,6 +251,36 @@ def history():
         })
 
     return jsonify(history_data)
+
+@app.route("/compare")
+def compare():
+    title = request.args.get("title", "")
+    if not title:
+        return jsonify([])
+
+    from sqlalchemy import func
+    # Get the latest price for each site for this product title
+    subq = db.session.query(
+        PriceHistory.site,
+        func.max(PriceHistory.date).label('max_date')
+    ).filter(PriceHistory.title == title).group_by(PriceHistory.site).subquery()
+
+    records = db.session.query(PriceHistory).join(
+        subq,
+        (PriceHistory.site == subq.c.site) & (PriceHistory.date == subq.c.max_date)
+    ).filter(PriceHistory.title == title).all()
+
+    # Sort by lowest price first
+    compare_data = []
+    for r in records:
+        compare_data.append({
+            "site": r.site,
+            "price": r.price,
+            "date": r.date.strftime("%d %b %Y %H:%M")
+        })
+    compare_data.sort(key=lambda x: x['price'])
+
+    return jsonify(compare_data)
 
 
 # ── WATCHLIST ────────────────────────────────────────────────
@@ -293,32 +339,28 @@ def best_deal():
     """
     from sqlalchemy import func
 
-    # Get max price ever recorded per (query, title)
+    # Get max price ever recorded per title
     subq_max = db.session.query(
-        PriceHistory.query,
         PriceHistory.title,
         func.max(PriceHistory.price).label("max_price")
-    ).group_by(PriceHistory.query, PriceHistory.title).subquery()
+    ).group_by(PriceHistory.title).subquery()
 
-    # Get latest price per (query, title)
+    # Get latest price per title
     subq_latest = db.session.query(
-        PriceHistory.query,
         PriceHistory.title,
         PriceHistory.site,
         PriceHistory.price.label("current_price"),
         func.max(PriceHistory.date).label("latest_date")
-    ).group_by(PriceHistory.query, PriceHistory.title).subquery()
+    ).group_by(PriceHistory.title, PriceHistory.site, PriceHistory.price).subquery()
 
     # Join and compute savings
     results = db.session.query(
         subq_latest.c.title,
         subq_latest.c.site,
-        subq_latest.c.query,
         subq_latest.c.current_price,
         subq_max.c.max_price
     ).join(
         subq_max,
-        (subq_latest.c.query == subq_max.c.query) &
         (subq_latest.c.title == subq_max.c.title)
     ).all()
 
@@ -337,8 +379,7 @@ def best_deal():
         "current_price": best.current_price,
         "highest_price": best.max_price,
         "savings": round(savings, 2),
-        "site": best.site,
-        "query": best.query
+        "site": best.site
     })
 
 
@@ -397,6 +438,7 @@ def get_alerts():
         "site": a.site,
         "link": a.link,
         "target_price": a.target_price,
+        "alert_type": a.alert_type,
         "added_at": a.added_at.strftime("%d %b %Y")
     } for a in alerts])
 
@@ -418,7 +460,8 @@ def add_alert():
         price=data.get("price", ""),
         site=data.get("site", ""),
         link=data.get("link", "#"),
-        target_price=data.get("target_price")
+        target_price=data.get("target_price"),
+        alert_type=data.get("alert_type", "price")
     )
     db.session.add(item)
     db.session.commit()
